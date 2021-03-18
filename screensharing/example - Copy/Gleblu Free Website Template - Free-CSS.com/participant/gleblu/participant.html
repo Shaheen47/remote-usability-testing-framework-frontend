@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <base target="mirrorIFrame">
+    <meta charset="UTF-8">
+    <title>Participant</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
+    <script src="mutation-summary.js"></script>
+    <script src="tree-mirror.js"></script>
+    <script src="PARTICIPANT.js" ></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+</head>
+<body>
+<div id="mirror" class="w3-container" style="width: 500px; height: 600px; top: 100px;left: 100px ;position: absolute" >
+    <iframe name="mirrorIFrame" id="mirrorIFrame" src="index.html" style="top: 0px;left: 0px; width:500px; height:600px;overflow: auto ; position: relative" >
+    </iframe>
+</div>
+
+
+<button onclick="startScreenSharing()" style="top: 600px;left: 50px">start screenSharing </button>
+<button onclick="findBase()" style="top: 600px;left: 100px">find base </button>
+<button onclick="reMirror()" style="top: 600px;left: 120px">mirror again </button>
+<a href="http://www.google.com" style="top: 600px;left: 160px">link text</a>
+<hr>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Participant</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
+    <script src="mutation-summary.js"></script>
+    <script src="tree-mirror.js"></script>
+    <script src="PARTICIPANT.js" ></script>
+
+</head>
+<body>
+<div id="mirror" style="overflow-y: scroll; width: 500px; height: 600px; top: 0px;left: 0px" >
+    This should be mirrored
+    <form>
+        <label for="fname">First name:</label><br>
+        <input type="text" id="fname" name="fname"><br>
+        <label for="lname">Last name:</label><br>
+        <input type="text" id="lname" name="lname">
+        <ol id="messageList">
+        </ol>
+        <img src="wolverine.jpg" alt="wolverine " style="width:200px;height:300px;">
+    </form>
+</div>
+
+<button onclick="sendMessage()">send test</button>
+
+<button onclick="startMirroring()">send initial dom </button>
+
+
+<button onclick="change()">change </button>
+
+
+<hr>
+</body>
+</html>
