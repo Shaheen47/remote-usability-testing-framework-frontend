@@ -105,12 +105,15 @@ async function joinChatSession(chatHubUrl)
     chatConnection.on("userJoined", (message) => {
         var messageList=document.getElementById("chatList");
         let li = document.createElement('li');
-        li.textContent = senderName+" : "+ message;
+        li.textContent = "an Observer has joined";
         messageList.appendChild(li);
     })
 
     chatConnection.on("userLeft", (message) => {
-
+        var messageList=document.getElementById("chatList");
+        let li = document.createElement('li');
+        li.textContent = "an Observer has left";
+        messageList.appendChild(li);
     })
 
     chatConnection.on("messageSent", (senderName,message) => {
@@ -119,9 +122,10 @@ async function joinChatSession(chatHubUrl)
         li.textContent = senderName+" : "+ message;
         messageList.appendChild(li);
     })
-
+    
     //connect with the session
     chatConnection.invoke("joinSession",chatSessionId);
+
 }
 
 function sendChatMessage()

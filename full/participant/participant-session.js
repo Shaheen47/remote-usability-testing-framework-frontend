@@ -1,7 +1,8 @@
 
-
+//screensharing
 var screenSharingSessionId
 var screenSharingHubUrl
+var screenConnection
 
 
 //videoconferencing
@@ -32,6 +33,8 @@ var Videosession;
 }
 
 
+// videoConferencing
+
 function joinConferenceSession()
 {
     OV = new OpenVidu();
@@ -52,8 +55,108 @@ function joinConferenceSession()
 }
 
 
+
+//Screensharing
+
 function joinScreensharingSession()
-{}
+{
+     screenConnection = new signalR.HubConnectionBuilder()
+    .withUrl(screenSharingHubUrl)
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+    try {
+        await screenConnection.start();
+        console.log("screensharing Connected.");
+    } catch (err) {
+        console.log(err);
+        setTimeout(5000);
+    }
+
+    iframe= document.getElementById("mirrorIFrame").contentWindow;
+    document.getElementById("mirrorIFrame").contentWindow.document.documentElement.addEventListener('mousemove',function (e)
+    {
+        var e = window.event;
+        var posX = e.clientX;
+        var posY = e.clientY;
+        console.debug("mouse :",posX," ",posY)
+        screenConnection.invoke("sendMousePosition","participant",screenSharingSessionId,e.x,e.y)
+    })
+    document.getElementById("mirrorIFrame").contentWindow.addEventListener('scroll',function (e)
+    {
+        let el=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
+        console.debug(el.scrollTop," ",el.scrollLeft)
+        screenConnection.invoke("sendScroll","participant",screenSharingSessionId,el.scrollTop)
+    })
+
+    screenConnection.invoke("joinSession",screenSharingSessionId)
+
+    startMirroring();
+}
+
+
+function startMirroring()
+{
+    mirrorClient = new TreeMirrorClient( document.getElementById("mirrorIFrame").contentWindow.document.documentElement, {
+        initialize: function ( rootId, children) {
+            let args=[rootId,children]
+            let a=[{'f':'initialize'},{'args':args}]
+            screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(a))
+            /*                args: [rootId, children]*/
+        },
+
+        applyChanged: function (removed, addedOrMoved, attributes, text) {
+            let args=[removed,addedOrMoved,attributes,text]
+            let a=[{'f':'applyChanged'},{'args':args}]
+            console.debug("attributes",attributes)
+            console.debug("addedOrMoved",addedOrMoved)
+            console.debug("text",text)
+            screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(a))
+            /*          args: [removed, addedOrMoved, attributes, text]*/
+        }
+    });
+}
+
+
+function reMirror()
+{
+    
+    //send clear command
+    let c={'clear':'clear'}
+    screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(c))
+    
+    //send the base of the page
+    var base=location.href.match(/^(.*\/)[^\/]*$/)[1];
+    let a={'base':base}
+    screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(a))
+    
+    mirrorClient = new TreeMirrorClient( document.getElementById("mirrorIFrame").contentWindow.document.documentElement, {
+        initialize: function ( rootId, children) {
+            let args=[rootId,children]
+            let a=[{'f':'initialize'},{'args':args}]
+            screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(a))
+            /*                args: [rootId, children]*/
+        },
+
+        applyChanged: function (removed, addedOrMoved, attributes, text) {
+            let args=[removed,addedOrMoved,attributes,text]
+            let a=[{'f':'applyChanged'},{'args':args}]
+            console.debug("attributes",attributes)
+            console.debug("addedOrMoved",addedOrMoved)
+            console.debug("text",text)
+            screenConnection.invoke("sendDom","participant",screenSharingSessionId,JSON.stringify(a))
+            /*          args: [removed, addedOrMoved, attributes, text]*/
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
 
 

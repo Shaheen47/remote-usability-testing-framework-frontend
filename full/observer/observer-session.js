@@ -27,7 +27,7 @@ var chatHubUrl
             console.debug(json)
             chatSessionId=json.chatSessionId
             chatHubUrl=json.chatHubUrl
-            observerConferenceToken=json.observerstConferencingToken
+            observerConferenceToken=json.observerConferencingToken
             screenSharingSessionId=json.screenSharingSessionId
             screenSharingHubUrl=json.screenSharingHubUrl
             //hide and show somethings
@@ -49,12 +49,12 @@ function joinConferenceSession()
     Videosession.on("streamCreated", function (event) {
         if(streamCounter===1)
         {
-         Videosession.subscribe(event.stream, "participanStream");
+         Videosession.subscribe(event.stream, "ModeratorStream");
          streamCounter=2
         }
         else
         {
-            Videosession.subscribe(event.stream, "ModeratorStream");
+            Videosession.subscribe(event.stream, "participanStream");
         }
         
     });
@@ -93,12 +93,15 @@ async function joinChatSession(chatHubUrl)
     chatConnection.on("userJoined", (message) => {
         var messageList=document.getElementById("chatList");
         let li = document.createElement('li');
-        li.textContent = senderName+" : "+ message;
+        li.textContent = "an Observer has joined";
         messageList.appendChild(li);
     })
 
     chatConnection.on("userLeft", (message) => {
-
+        var messageList=document.getElementById("chatList");
+        let li = document.createElement('li');
+        li.textContent = "an Observer has left";
+        messageList.appendChild(li);
     })
 
     chatConnection.on("messageSent", (senderName,message) => {
