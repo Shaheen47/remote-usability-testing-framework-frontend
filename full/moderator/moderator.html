@@ -5,7 +5,8 @@
     <title>Moderator</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
-    <script src="moderator-chat.js"></script>
+    <script src="openvidu-browser-2.17.0.js"></script>
+    <script src="moderator-session.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 </head>
 <body>
@@ -17,12 +18,12 @@
 
 
 <div  class="w3-container" style="width: 300px; height: 300px; top: 100px;left: 570px ;position: absolute" >
-    <div style="top: 0px;left: 0px; width:150px; height:300px;overflow: auto ; position: relative; border: solid " >
+    <div id="participanStream" style="top: 0px;left: 0px; width:150px; height:300px;overflow: auto ; position: relative; border: solid " >
 
         Here is participant camera
     </div>
 
-    <div style="top: -305px;left: 150px; width:150px; height:300px;overflow: auto ; position: relative; border: solid" >
+    <div id="ModeratorStream" style="top: -305px;left: 150px; width:150px; height:300px;overflow: auto ; position: relative; border: solid" >
 
         Here is moderator camera
     </div>
@@ -41,6 +42,14 @@
     <ul id="chatList"></ul>
 </div>
 
+</div>
+
+
+<div style="top:20px; left: 100px;;width: 500px; height: 100px ;position: absolute">
+<button onclick="createSession()" style="top: 0;left: 0px ;position: relative">Create Session</button>
+<button onclick="joinSession()" style="top: 0;left: 20px  ;position: relative">Join Session</button>
+<label for="sessionIdInput" style="top: 0;left: 40px  ;position: relative" >Session Id:</label>
+<input type="text" id="sessionIdInput" style="top: 0;left: 70px;position: relative"></input>
 </div>
 
 
