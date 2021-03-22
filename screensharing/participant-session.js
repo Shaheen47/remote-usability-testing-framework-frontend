@@ -101,24 +101,8 @@ function reMirror()
     let a={'base':base}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
     
-    mirrorClient = new TreeMirrorClient( document.getElementById("mirrorIFrame").contentWindow.document.documentElement, {
-        initialize: function ( rootId, children) {
-            let args=[rootId,children]
-            let a=[{'f':'initialize'},{'args':args}]
-            screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-            /*                args: [rootId, children]*/
-        },
-
-        applyChanged: function (removed, addedOrMoved, attributes, text) {
-            let args=[removed,addedOrMoved,attributes,text]
-            let a=[{'f':'applyChanged'},{'args':args}]
-            console.debug("attributes",attributes)
-            console.debug("addedOrMoved",addedOrMoved)
-            console.debug("text",text)
-            screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-            /*          args: [removed, addedOrMoved, attributes, text]*/
-        }
-    });
+    startMirroring()
+    
 }
 
 

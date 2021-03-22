@@ -54,7 +54,6 @@ async function joinScreensharingSession()
     // mouse movement
     
     screenConnection.on("sentMousePosition", (x,y) => {
-        document.getElementById("mousePointer").style.position = 'absolute';
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
         
