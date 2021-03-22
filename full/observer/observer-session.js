@@ -24,7 +24,7 @@ var chatHubUrl
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
             var json = JSON.parse(xhr.responseText);
-            console.debug(json)
+            console.info(json)
             chatSessionId=json.chatSessionId
             chatHubUrl=json.chatHubUrl
             observerConferenceToken=json.observerConferencingToken
@@ -33,7 +33,15 @@ var chatHubUrl
             //hide and show somethings
             joinConferenceSession()
             joinChatSession(chatHubUrl)
+            joinScreensharingSession()
 
+        }
+        else 
+        {
+            if(xhr.readyState === 4 && xhr.status === 400)
+            {
+                console.info(xhr.responseText)
+            }
         }
     };
     var data = JSON.stringify({"sessionId":document.getElementById("sessionIdInput").value});
@@ -66,8 +74,109 @@ function joinConferenceSession()
 }
 
 
-function joinScreensharingSession()
-{}
+// screensharing
+
+// screensharing
+
+async function joinScreensharingSession()
+{
+    screenConnection = new signalR.HubConnectionBuilder()
+    .withUrl(screenSharingHubUrl)
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+    try {
+        await screenConnection.start();
+        console.info("screensharing Connected.");
+    } catch (err) {
+        console.info(err);
+        setTimeout(5000);
+    }
+
+    createNewMirror();
+
+    screenConnection.invoke("joinSession",screenSharingSessionId)
+
+
+    screenConnection.on("sentDom", (user,dom) => {
+        var msg = JSON.parse(dom);
+        console.info("here we go2",msg)
+        /*if (msg instanceof Array) {
+            console.debug("here we go3",JSON.parse(subMessage))
+            msg.forEach(function(subMessage) {
+                console.debug("here we go3",JSON.parse(subMessage))
+                handleMessage(JSON.parse(subMessage));
+            });
+        } else {*/
+        handleScreensharingMessage(msg);
+        /*        }*/
+    });
+    
+    // mouse movement
+    
+    screenConnection.on("sentMousePosition", (user,x,y) => {
+        document.getElementById("mousePointer").style.position = 'absolute';
+        document.getElementById("mousePointer").style.left = x + 'px';
+        document.getElementById("mousePointer").style.top = y + 'px';
+        
+    })
+    
+    // scrolling
+    
+        
+    
+    screenConnection.on("sentScroll", (user,vertical) => {
+        console.debug(vertical)
+        let el=document.getElementById("mirror")
+        // To set the scroll
+        el.scrollTop = vertical;
+    })
+
+}
+
+function createNewMirror()
+{
+    var base;
+
+    mirror = new TreeMirror(document.getElementById("mirror"), {
+        createElement: function (tagName) {
+            if (tagName == 'SCRIPT') {
+                var node = document.createElement('NO-SCRIPT');
+                node.style.display = 'none';
+                return node;
+            }
+
+            if (tagName == 'HEAD') {
+                var node = document.createElement('HEAD');
+                node.appendChild(document.createElement('BASE'));
+                node.firstChild.href = base;
+                return node;
+            }
+        }
+    });
+
+}
+
+function clearScreensharingPage() {
+    while (document.getElementById("mirror").firstChild) {
+        document.getElementById("mirror").removeChild(document.getElementById("mirror").firstChild);
+    }
+}
+
+function handleScreensharingMessage(msg) {
+    if (msg.clear) {
+        clearScreensharingPage();
+        createNewMirror();
+    }
+    else if (msg.base)
+        base = msg.base;
+    else
+        /* mirror['initialize'].apply(mirror, msg[1].args);*/
+        mirror[msg[0].f].apply(mirror, msg[1].args);
+    console.debug("mirror[msg[0].f].apply(mirror, msg[1].args) called")
+}
+
+//////////////
 
 
 async function joinChatSession(chatHubUrl)

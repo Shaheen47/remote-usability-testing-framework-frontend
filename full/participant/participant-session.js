@@ -25,6 +25,7 @@ var Videosession;
             screenSharingHubUrl=json.screenSharingHubUrl
             //hide and show somethings
             joinConferenceSession()
+            joinScreensharingSession()
 
         }
     };
@@ -58,7 +59,7 @@ function joinConferenceSession()
 
 //Screensharing
 
-function joinScreensharingSession()
+async function joinScreensharingSession()
 {
      screenConnection = new signalR.HubConnectionBuilder()
     .withUrl(screenSharingHubUrl)
@@ -156,7 +157,7 @@ function reMirror()
 
 
 
-
+// closing
 
 
 
