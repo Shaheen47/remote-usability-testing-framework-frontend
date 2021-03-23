@@ -66,7 +66,7 @@ async function joinScreensharingSession()
     
     screenConnection.on("sentScroll", (vertical) => {
         console.debug(vertical)
-        let el=document.getElementById("mirror")
+        let el=document.getElementById("mirrorIFrame").contentWindow
         // To set the scroll
         el.scrollTop = vertical;
     })
@@ -76,8 +76,9 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var base;
-
-    mirror = new TreeMirror(document.getElementById("mirror"), {
+    var m=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
+   /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
+    mirror = new TreeMirror(m, {
         createElement: function (tagName) {
             if (tagName == 'SCRIPT') {
                 var node = document.createElement('NO-SCRIPT');
@@ -97,8 +98,9 @@ function createNewMirror()
 }
 
 function clearScreensharingPage() {
-    while (document.getElementById("mirror").firstChild) {
-        document.getElementById("mirror").removeChild(document.getElementById("mirror").firstChild);
+    var m=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
+    while (m.firstChild) {
+        m.removeChild(m.firstChild);
     }
 }
 
