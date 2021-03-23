@@ -32,9 +32,10 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
-    createNewMirror();
-
     screenConnection.invoke("joinSession",screenSharingSessionId)
+
+
+    createNewMirror();
 
 
     screenConnection.on("sentDom", (dom) => {

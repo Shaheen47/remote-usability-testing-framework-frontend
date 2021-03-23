@@ -16,6 +16,8 @@ var iframe
 
 async function joinScreensharingSession()
 {
+
+    //foin the session 
      screenConnection = new signalR.HubConnectionBuilder()
     .withUrl(screenSharingHubUrl)
     .configureLogging(signalR.LogLevel.Information)
@@ -29,38 +31,16 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
-    iframe= document.getElementById("mirrorIFrame").contentWindow;
+    screenConnection.invoke("joinSession",screenSharingSessionId)
 
-    //add listeners
 
-    // Usage:
+    // page change listener
     iframeURLChange(document.getElementById("mirrorIFrame"), function (newURL) {
     console.log("URL changed:", newURL);
     reMirror()
 });
- 
 
-
-
-    iframe.document.documentElement.addEventListener('mousemove',function (e)
-    {
-        var e = window.event;
-        var posX = e.clientX;
-        var posY = e.clientY;
-        console.debug("mouse :",posX," ",posY)
-        screenConnection.invoke("sendMousePosition",screenSharingSessionId,e.x,e.y)
-    })
-
-    iframe.addEventListener('scroll',function (e)
-    {
-        let el=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
-        console.debug(el.scrollTop," ",el.scrollLeft)
-        screenConnection.invoke("sendScroll",screenSharingSessionId,el.scrollTop)
-    })
-
-    // join the session
-    screenConnection.invoke("joinSession",screenSharingSessionId)
-
+    
     // start screensharing
     startMirroring();
 }
@@ -68,7 +48,18 @@ async function joinScreensharingSession()
 
 function startMirroring()
 {
-    mirrorClient = new TreeMirrorClient( iframe.document.documentElement, {
+   
+    iframe= document.getElementById("mirrorIFrame").contentWindow;
+
+    //scroll listeners
+    iframe.addEventListener('scroll',scrollMirror)
+
+     //mouse listener
+     iframe.addEventListener('mousemove',mouseMirror)
+
+    // mirror
+
+    mirrorClient = new TreeMirrorClient( iframe.document.body, {
         initialize: function ( rootId, children) {
             let args=[rootId,children]
             let a=[{'f':'initialize'},{'args':args}]
@@ -100,8 +91,10 @@ function reMirror()
     var base=location.href.match(/^(.*\/)[^\/]*$/)[1];
     let a={'base':base}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-    
-    startMirroring()
+
+    iframe.removeEventListener('mousemove',mouseMirror)
+    iframe.removeEventListener('scroll',scrollMirror)
+    setTimeout(startMirroring, 500);
     
 }
 
@@ -144,3 +137,22 @@ function reMirror()
     attachUnload();
 }
 
+
+
+// screensharing callbacks
+
+function mouseMirror(e)
+{
+    var e = window.event;
+    var posX = e.clientX;
+    var posY = e.clientY;
+    console.debug("mouse :",posX," ",posY)
+    screenConnection.invoke("sendMousePosition",screenSharingSessionId,e.x,e.y)
+}
+
+function scrollMirror(e)
+{
+    let el=iframe.document.documentElement
+    console.debug(el.scrollTop," ",el.scrollLeft)
+    screenConnection.invoke("sendScroll",screenSharingSessionId,el.scrollTop)
+}
