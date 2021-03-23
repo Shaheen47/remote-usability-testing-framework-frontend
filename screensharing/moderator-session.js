@@ -57,6 +57,7 @@ async function joinScreensharingSession()
     screenConnection.on("sentMousePosition", (x,y) => {
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
+
         
     })
     
@@ -66,7 +67,7 @@ async function joinScreensharingSession()
     
     screenConnection.on("sentScroll", (vertical) => {
         console.debug(vertical)
-        let el=document.getElementById("mirrorIFrame").contentWindow
+        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
         // To set the scroll
         el.scrollTop = vertical;
     })
@@ -76,7 +77,16 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var base;
-    var m=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
+    var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+    myFrameDoc.write('<html>');
+    myFrameDoc.write('<head>');
+    myFrameDoc.write('</head>');
+    myFrameDoc.write('<body>');
+    myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+    myFrameDoc.write('</body>');
+    myFrameDoc.write('</html>');
+
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
     mirror = new TreeMirror(m, {
         createElement: function (tagName) {
@@ -98,7 +108,7 @@ function createNewMirror()
 }
 
 function clearScreensharingPage() {
-    var m=document.getElementById("mirrorIFrame").contentWindow.document.documentElement
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     while (m.firstChild) {
         m.removeChild(m.firstChild);
     }
