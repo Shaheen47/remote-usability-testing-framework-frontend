@@ -59,7 +59,7 @@ function startMirroring()
 
     // mirror
 
-    mirrorClient = new TreeMirrorClient( iframe.document.body, {
+    mirrorClient = new TreeMirrorClient( iframe.document.documentElement, {
         initialize: function ( rootId, children) {
             let args=[rootId,children]
             let a=[{'f':'initialize'},{'args':args}]
