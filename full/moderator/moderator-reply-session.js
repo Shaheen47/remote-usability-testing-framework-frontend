@@ -1,17 +1,85 @@
 
 //screensharing
-var screenSharingSessionId="dsasT23F"
-var screenSharingHubUrl="https://localhost:5005/DomHub"
+var screenSharingSessionId
+var screenSharingHubUrl
 var mirror
 var screenConnection
 
+//video
+var videoUrl
 
+//chat
 
-
- function joinSession() {
-    joinScreensharingSession()
+ function prepareSessionReply()
+{
+    getSessionInfo()
+    getChatMessage();
+   /* getVideo();*/
+    joinScreensharingSession();
 }
 
+async function getSessionInfo() {
+
+    var url = "https://localhost:5001/Session/"+document.getElementById("sessionIdInput").value;
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+            var json = JSON.parse(xhr.responseText);
+            console.debug(json)
+            screenSharingSessionId=json.screenSharingSessionId
+            screenSharingHubUrl=json.screenSharingHubUrl
+
+        }
+    }
+    xhr.open('GET', url, false);
+    xhr.send(null);
+
+
+}
+
+function replySession() {
+
+    replyScreenMirrorSession();
+}
+
+
+// chat
+
+function getChatMessage()
+{
+    var url = "https://localhost:5001/Chat/"+document.getElementById("sessionIdInput").value;
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+            var chat = JSON.parse(xhr.responseText);
+            chat.forEach(function(message) {
+                var messageList=document.getElementById("chatList");
+                let li = document.createElement('li');
+                li.textContent = message.timestamp+":"+message.sender+" : "+message.message;
+                messageList.appendChild(li);
+            });
+
+        }
+    }
+    xhr.open('GET', url, true);
+    xhr.send(null);
+}
+
+
+// video
+
+function getVideo()
+{
+    var url = "https://localhost:5001/Session/get-recording-url";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+            alert(xhr.responseText);
+        }
+    }
+    xhr.open('GET', url, true);
+    xhr.send(null);
+}
 
 
 
@@ -20,9 +88,9 @@ var screenConnection
 async function joinScreensharingSession()
 {
     screenConnection = new signalR.HubConnectionBuilder()
-    .withUrl(screenSharingHubUrl)
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+        .withUrl(screenSharingHubUrl)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
     try {
         await screenConnection.start();
@@ -51,20 +119,20 @@ async function joinScreensharingSession()
         handleScreensharingMessage(msg);
         /*        }*/
     });
-    
+
     // mouse movement
-    
+
     screenConnection.on("sentMousePosition", (x,y) => {
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
 
-        
+
     })
-    
+
     // scrolling
-    
-        
-    
+
+
+
     screenConnection.on("sentScroll", (vertical) => {
         console.debug(vertical)
         let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
@@ -87,7 +155,7 @@ function createNewMirror()
     myFrameDoc.write('</html>');
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-   /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
+    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
     mirror = new TreeMirror(m, {
         createElement: function (tagName) {
             if (tagName == 'SCRIPT') {
@@ -129,10 +197,9 @@ function handleScreensharingMessage(msg) {
 
 
 
-
 //////////////// reply
 
-function replySession() {
+function replyScreenMirrorSession() {
     var xhr = new XMLHttpRequest();
     var url = "https://localhost:5005/Session/reply-session";
     xhr.open("POST", url, true);
@@ -148,6 +215,9 @@ function replySession() {
             }
         }
     };
-    var data = JSON.stringify({"sessionId": "dsasT23F"});
+    var data = JSON.stringify({"sessionId": screenSharingSessionId});
     xhr.send(data);
 }
+
+
+

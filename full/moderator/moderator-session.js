@@ -146,12 +146,15 @@ function sendChatMessage()
 
 // screensharing
 
+
+// screensharing
+
 async function joinScreensharingSession()
 {
     screenConnection = new signalR.HubConnectionBuilder()
-    .withUrl(screenSharingHubUrl)
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+        .withUrl(screenSharingHubUrl)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
     try {
         await screenConnection.start();
@@ -161,12 +164,13 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
+    screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
+
+
     createNewMirror();
 
-    screenConnection.invoke("joinSession",screenSharingSessionId)
 
-
-    screenConnection.on("sentDom", (user,dom) => {
+    screenConnection.on("sentDom", (dom) => {
         var msg = JSON.parse(dom);
         console.debug("here we go2",msg)
         /*if (msg instanceof Array) {
@@ -179,23 +183,23 @@ async function joinScreensharingSession()
         handleScreensharingMessage(msg);
         /*        }*/
     });
-    
+
     // mouse movement
-    
-    screenConnection.on("sentMousePosition", (user,x,y) => {
-        document.getElementById("mousePointer").style.position = 'absolute';
+
+    screenConnection.on("sentMousePosition", (x,y) => {
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
-        
+
+
     })
-    
+
     // scrolling
-    
-        
-    
-    screenConnection.on("sentScroll", (user,vertical) => {
+
+
+
+    screenConnection.on("sentScroll", (vertical) => {
         console.debug(vertical)
-        let el=document.getElementById("mirror")
+        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
         // To set the scroll
         el.scrollTop = vertical;
     })
@@ -205,8 +209,18 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var base;
+    var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+    myFrameDoc.write('<html>');
+    myFrameDoc.write('<head>');
+    myFrameDoc.write('</head>');
+    myFrameDoc.write('<body>');
+    myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+    myFrameDoc.write('</body>');
+    myFrameDoc.write('</html>');
 
-    mirror = new TreeMirror(document.getElementById("mirror"), {
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
+    mirror = new TreeMirror(m, {
         createElement: function (tagName) {
             if (tagName == 'SCRIPT') {
                 var node = document.createElement('NO-SCRIPT');
@@ -226,8 +240,9 @@ function createNewMirror()
 }
 
 function clearScreensharingPage() {
-    while (document.getElementById("mirror").firstChild) {
-        document.getElementById("mirror").removeChild(document.getElementById("mirror").firstChild);
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    while (m.firstChild) {
+        m.removeChild(m.firstChild);
     }
 }
 
@@ -244,7 +259,33 @@ function handleScreensharingMessage(msg) {
     console.debug("mirror[msg[0].f].apply(mirror, msg[1].args) called")
 }
 
-// closing
+
+
+
+//////////////// reply
+
+function replySession() {
+    var xhr = new XMLHttpRequest();
+    var url = "https://localhost:5005/Session/reply-session";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 201) {
+            var json = JSON.parse(xhr.responseText);
+            console.debug(json)
+            //hide and show somethings
+        } else {
+            if (xhr.readyState === 4 && xhr.status === 400) {
+                console.debug(xhr.responseText)
+            }
+        }
+    };
+    var data = JSON.stringify({"sessionId": screenSharingSessionId});
+    xhr.send(data);
+}
+
+
+/////////////////// closing
 
 function startSessionRecording() {
     

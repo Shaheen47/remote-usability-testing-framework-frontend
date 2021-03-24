@@ -100,7 +100,6 @@ function reMirror()
 
 
 
-
 // source : https://gist.github.com/hdodov/a87c097216718655ead6cf2969b0dcfa
   function iframeURLChange(iframe, callback) {
     var lastDispatched = null;
