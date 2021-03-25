@@ -1,12 +1,15 @@
 
 //screensharing
+
+//screensharing
 var screenSharingSessionId
 var screenSharingHubUrl
-var mirror
+
 var screenConnection
+var mirror
 
 //video
-var videoUrl
+var videoRecordingUrl
 
 //chat
 
@@ -14,11 +17,11 @@ var videoUrl
 {
     getSessionInfo()
     getChatMessage();
-   /* getVideo();*/
     joinScreensharingSession();
+    prepearVideo()
 }
 
-async function getSessionInfo() {
+ function getSessionInfo() {
 
     var url = "https://localhost:5001/Session/"+document.getElementById("sessionIdInput").value;
     var xhr = new XMLHttpRequest();
@@ -26,8 +29,9 @@ async function getSessionInfo() {
         if (xhr.readyState == XMLHttpRequest.DONE) {
             var json = JSON.parse(xhr.responseText);
             console.debug(json)
-            screenSharingSessionId=json.screenSharingSessionId
-            screenSharingHubUrl=json.screenSharingHubUrl
+            screenSharingSessionId=json.screenSharingSessionId;
+            screenSharingHubUrl=json.screenSharingReplyHubUrl;
+            videoRecordingUrl=json.videoRecordingUrl;
 
         }
     }
@@ -40,6 +44,9 @@ async function getSessionInfo() {
 function replySession() {
 
     replyScreenMirrorSession();
+    //start video
+    var video = document.getElementById('videoId');
+    video.play()
 }
 
 
@@ -67,21 +74,13 @@ function getChatMessage()
 
 
 // video
-
-function getVideo()
+function  prepearVideo()
 {
-    var url = "https://localhost:5001/Session/get-recording-url";
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
-            alert(xhr.responseText);
-        }
-    }
-    xhr.open('GET', url, true);
-    xhr.send(null);
+    var video = document.getElementById('videoId');
+    var source = document.createElement('source');
+    source.setAttribute('src', videoRecordingUrl);
+    video.appendChild(source);
 }
-
-
 
 // screensharing
 
@@ -100,7 +99,7 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
-    screenConnection.invoke("joinSession",screenSharingSessionId)
+    screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
 
 
     createNewMirror();
@@ -201,12 +200,11 @@ function handleScreensharingMessage(msg) {
 
 function replyScreenMirrorSession() {
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5005/Session/reply-session";
-    xhr.open("POST", url, true);
+    var url = "https://localhost:5001/Session/reply-screensharing";
+    xhr.open("POST", url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 201) {
-            var json = JSON.parse(xhr.responseText);
+        if (xhr.readyState === 4 && xhr.status === 200) {
             console.debug(json)
             //hide and show somethings
         } else {
@@ -215,7 +213,7 @@ function replyScreenMirrorSession() {
             }
         }
     };
-    var data = JSON.stringify({"sessionId": screenSharingSessionId});
+    var data = JSON.stringify({"sessionId": document.getElementById("sessionIdInput").value});
     xhr.send(data);
 }
 

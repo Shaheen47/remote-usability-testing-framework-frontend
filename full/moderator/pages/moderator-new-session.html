@@ -8,7 +8,7 @@
     <script src="../openvidu-browser-2.17.0.js"></script>
     <script src="../mutation-summary.js"></script>
     <script src="../tree-mirror.js"></script>
-    <script src="../moderator-session.js"></script>
+    <script src="../moderator-new-session.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 </head>
 <body>
@@ -52,9 +52,11 @@
 <div   style="top: 0%;left: 5%   ;width: 55%; height: 10%; position: absolute;border: solid ;display: inline-block">
     <button onclick="createSession()" style="top: 0;left: 0px ;position: relative">Create Session</button>
     <button onclick="joinSession()" style="top: 0;left: 20px  ;position: relative">Join Session</button>
-    <button onclick="replySession()" style="top: 0;left: 20px  ;position: relative">reply Session</button>
+    <button onclick="stopSession()" style="top: 0;left: 20px  ;position: relative">stop Session</button>
     <label for="sessionIdInput" style="top: 0;left: 40px  ;position: relative" >Session Id:</label>
     <input type="text" id="sessionIdInput" style="top: 0;left: 70px;position: relative"></input>
+    <label for="recordCheckBox" style="top: 45px;left:-600px;position: relative"> Record Session ?</label><br>
+    <input type="checkbox" id="recordCheckBox" name="recordCheckBox" value="Bike" style="top: 20px;left: 220px;position: relative">
 </div>
 
 

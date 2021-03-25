@@ -19,18 +19,22 @@ var chatHubUrl
 
 function createSession()
 {
+    var url="https://localhost:5001/Session/";
+
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/create-session";
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
             var json = JSON.parse(xhr.responseText);
             document.getElementById("sessionIdInput").value=json.id;
-
         }
     };
-    var data="{}"
+    var data
+    if(document.getElementById("recordCheckBox").checked===true)
+        data=JSON.stringify({"isRecorded":true})
+    else
+        data=JSON.stringify({"isRecorded":false})
     xhr.send(data);
 }
 
@@ -261,31 +265,36 @@ function handleScreensharingMessage(msg) {
 
 
 
+/////////////////// closing
 
-//////////////// reply
 
-function replySession() {
+function stopSession()
+{
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5005/Session/reply-session";
-    xhr.open("POST", url, true);
+    var url = "https://localhost:5001/Session/"+document.getElementById("sessionIdInput").value;
+    xhr.open("DELETE", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 201) {
+        if (xhr.readyState === 4 && xhr.status === 204) {
             var json = JSON.parse(xhr.responseText);
             console.debug(json)
             //hide and show somethings
-        } else {
-            if (xhr.readyState === 4 && xhr.status === 400) {
+            leaveVideoSession()
+            chatConnection.close()
+            screenConnection.close()
+        }
+        else
+        {
+            if(xhr.readyState === 4 && xhr.status === 400)
+            {
                 console.debug(xhr.responseText)
             }
         }
     };
-    var data = JSON.stringify({"sessionId": screenSharingSessionId});
+    var data = "{}"
     xhr.send(data);
 }
 
-
-/////////////////// closing
 
 function startSessionRecording() {
     
