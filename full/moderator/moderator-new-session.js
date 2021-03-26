@@ -277,7 +277,6 @@ function stopSession()
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 204) {
             var json = JSON.parse(xhr.responseText);
-            console.debug(json)
             //hide and show somethings
             leaveVideoSession()
             chatConnection.close()

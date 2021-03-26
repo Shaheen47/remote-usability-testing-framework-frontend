@@ -4,8 +4,10 @@
 //screensharing
 var screenSharingSessionId
 var screenSharingHubUrl
+var screenSharingReplyControllingHubUrl
 
 var screenConnection
+var screenReplyControllingConnection
 var mirror
 
 //video
@@ -32,6 +34,7 @@ var videoRecordingUrl
             screenSharingSessionId=json.screenSharingSessionId;
             screenSharingHubUrl=json.screenSharingReplyHubUrl;
             videoRecordingUrl=json.videoRecordingUrl;
+            screenSharingReplyControllingHubUrl=json.screenSharingReplyControllingHubUrl;
 
         }
     }
@@ -139,6 +142,23 @@ async function joinScreensharingSession()
         el.scrollTop = vertical;
     })
 
+
+
+    // screenmirroring controlling
+    screenReplyControllingConnection = new signalR.HubConnectionBuilder()
+        .withUrl(screenSharingReplyControllingHubUrl)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    try {
+        await screenReplyControllingConnection.start();
+        console.log("screen reply Controlling Connected.");
+    } catch (err) {
+        console.log(err);
+        setTimeout(5000);
+    }
+
+
 }
 
 function createNewMirror()
@@ -219,3 +239,29 @@ function replyScreenMirrorSession() {
 
 
 
+/// video event listners for sync with screen mirroring
+
+var video=document.getElementById('videoId');
+
+
+
+
+video.addEventListener('play', function() {
+    console.log('Video is at a new position.'+video.currentTime);
+    screenReplyControllingConnection.invoke("continueReply",screenSharingSessionId)
+})
+
+video.addEventListener('pause', function() {
+    console.log('Video is at a new position.'+video.currentTime);
+    screenReplyControllingConnection.invoke("pauseReply",screenSharingSessionId)
+})
+
+video.addEventListener('seeking', function() {
+    console.log('Video is at a new position.'+video.currentTime);
+    screenReplyControllingConnection.invoke("seekReply",screenSharingSessionId,video.currentTime)
+})
+
+video.addEventListener('ended', function() {
+    console.log('Video is at a new position.'+video.currentTime);
+    screenReplyControllingConnection.invoke("stopReply",screenSharingSessionId)
+})
