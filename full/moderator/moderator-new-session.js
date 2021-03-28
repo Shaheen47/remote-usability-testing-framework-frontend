@@ -194,7 +194,14 @@ async function joinScreensharingSession()
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
 
+    })
 
+    screenConnection.on("mouseUp",()=> {
+        document.getElementById("mousePointer").src="../mouse-icons/011-mouse-1.svg";
+    })
+
+    screenConnection.on("mouseDown",()=> {
+        document.getElementById("mousePointer").src="../mouse-icons/048-click.svg";
     })
 
     // scrolling

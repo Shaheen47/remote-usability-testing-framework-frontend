@@ -21,6 +21,7 @@ var videoRecordingUrl
     getChatMessage();
     joinScreensharingSession();
     prepearVideo()
+    prepearScreenMirroringControlling()
 }
 
  function getSessionInfo() {
@@ -44,15 +45,60 @@ var videoRecordingUrl
 
 }
 
-function replySession() {
+ async function  prepearScreenMirroringControlling() {
 
-    replyScreenMirrorSession();
-    //start video
+     // screenmirroring controlling
+     screenReplyControllingConnection = new signalR.HubConnectionBuilder()
+         .withUrl(screenSharingReplyControllingHubUrl)
+         .withAutomaticReconnect()
+         .configureLogging(signalR.LogLevel.Debug)
+         .build();
+
+     screenReplyControllingConnection.on("test", (x) => {
+         console.debug(x);
+
+
+     })
+     try {
+         await screenReplyControllingConnection.start();
+         console.log("screen mirroring controll Connected.");
+     } catch (err) {
+         console.log(err);
+     }
+     screenReplyControllingConnection.invoke("startReply",screenSharingSessionId)
+
+
+    /// video event listners for sync with screen mirroring
     var video = document.getElementById('videoId');
-    video.play()
+
+    video.addEventListener('playing', async function () {
+        console.log('Video is playing ,position.' + video.currentTime);
+        try {
+            await screenReplyControllingConnection.invoke("continueReply", screenSharingSessionId)
+        } catch (err) {
+            console.error(err);
+        }
+    });
+     video.addEventListener('pause', async function () {
+         console.log('Video is paused ,position.' + video.currentTime);
+         try {
+             await screenReplyControllingConnection.invoke("pauseReply", screenSharingSessionId)
+         } catch (err) {
+             console.error(err);
+         }
+     });
+
+        video.addEventListener('seeked', function() {
+            console.log('Video is seeking a new position:'+Math.floor( video.currentTime*1000 ));
+            screenReplyControllingConnection.invoke("seekReply",screenSharingSessionId, Math.floor( video.currentTime*1000 ))
+        })
+
+    /*    video.addEventListener('ended', function() {
+            console.log('Video is ended,position.'+video.currentTime);
+            screenReplyControllingConnection.invoke("stopReply",screenSharingSessionId)
+        })*/
+
 }
-
-
 // chat
 
 function getChatMessage()
@@ -143,22 +189,6 @@ async function joinScreensharingSession()
     })
 
 
-
-    // screenmirroring controlling
-    screenReplyControllingConnection = new signalR.HubConnectionBuilder()
-        .withUrl(screenSharingReplyControllingHubUrl)
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
-
-    try {
-        await screenReplyControllingConnection.start();
-        console.log("screen reply Controlling Connected.");
-    } catch (err) {
-        console.log(err);
-        setTimeout(5000);
-    }
-
-
 }
 
 function createNewMirror()
@@ -218,50 +248,3 @@ function handleScreensharingMessage(msg) {
 
 //////////////// reply
 
-function replyScreenMirrorSession() {
-    var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/reply-screensharing";
-    xhr.open("POST", url, false);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.debug(json)
-            //hide and show somethings
-        } else {
-            if (xhr.readyState === 4 && xhr.status === 400) {
-                console.debug(xhr.responseText)
-            }
-        }
-    };
-    var data = JSON.stringify({"sessionId": document.getElementById("sessionIdInput").value});
-    xhr.send(data);
-}
-
-
-
-/// video event listners for sync with screen mirroring
-
-var video=document.getElementById('videoId');
-
-
-
-
-video.addEventListener('play', function() {
-    console.log('Video is at a new position.'+video.currentTime);
-    screenReplyControllingConnection.invoke("continueReply",screenSharingSessionId)
-})
-
-video.addEventListener('pause', function() {
-    console.log('Video is at a new position.'+video.currentTime);
-    screenReplyControllingConnection.invoke("pauseReply",screenSharingSessionId)
-})
-
-video.addEventListener('seeking', function() {
-    console.log('Video is at a new position.'+video.currentTime);
-    screenReplyControllingConnection.invoke("seekReply",screenSharingSessionId,video.currentTime)
-})
-
-video.addEventListener('ended', function() {
-    console.log('Video is at a new position.'+video.currentTime);
-    screenReplyControllingConnection.invoke("stopReply",screenSharingSessionId)
-})

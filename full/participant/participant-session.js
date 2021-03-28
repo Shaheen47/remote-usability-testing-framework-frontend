@@ -12,6 +12,8 @@ var Videosession;
 
 
  function joinSession() {
+
+
     var xhr = new XMLHttpRequest();
     var url = "https://localhost:5001/Session/join-as-participant";
     xhr.open("POST", url, true);
@@ -103,6 +105,12 @@ function startMirroring()
     //mouse listener
     iframe.addEventListener('mousemove',mouseMirror)
 
+    iframe.addEventListener('mouseup',mouseUp)
+
+    iframe.addEventListener('mousedown',mouseDown)
+
+
+
     // mirror
 
     mirrorClient = new TreeMirrorClient( iframe.document.documentElement, {
@@ -188,11 +196,19 @@ function iframeURLChange(iframe, callback) {
 
 function mouseMirror(e)
 {
+    /*var posX = e.clientX;
+    var posY = e.clientY;
+    var posX2 = e.offsetX
+    var posY2 = e.offsetY
+    var posX3 = e.pageX
+    var posY3= e.pageY
+    screenConnection.invoke("sendMousePosition",screenSharingSessionId,posX3,posY3)*/
     var e = window.event;
     var posX = e.clientX;
     var posY = e.clientY;
     console.debug("mouse :",posX," ",posY)
     screenConnection.invoke("sendMousePosition",screenSharingSessionId,e.x,e.y)
+
 }
 
 function scrollMirror(e)
@@ -202,8 +218,17 @@ function scrollMirror(e)
     screenConnection.invoke("sendScroll",screenSharingSessionId,el.scrollTop)
 }
 
+function mouseUp()
+{
+    console.debug("mouse up")
+    screenConnection.invoke("mouseUp",screenSharingSessionId)
+}
 
-
+function mouseDown()
+{
+    console.debug("mouse down")
+    screenConnection.invoke("mouseDown",screenSharingSessionId)
+}
 
 // closing
 
@@ -218,3 +243,5 @@ function leaveVideoSession() {
 window.onbeforeunload = function () {
     if (Videosession) Videosession.disconnect()
 };
+
+
