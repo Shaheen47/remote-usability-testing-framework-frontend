@@ -13,7 +13,8 @@ var mirror
 //video
 var videoRecordingUrl
 
-//chat
+// server
+var urlBase="https://localhost:5001/"
 
  function prepareSessionReply()
 {
@@ -26,7 +27,7 @@ var videoRecordingUrl
 
  function getSessionInfo() {
 
-    var url = "https://localhost:5001/Session/"+document.getElementById("sessionIdInput").value;
+    var url =urlBase+"Session/"+document.getElementById("sessionIdInput").value;
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -103,7 +104,7 @@ var videoRecordingUrl
 
 function getChatMessage()
 {
-    var url = "https://localhost:5001/Chat/"+document.getElementById("sessionIdInput").value;
+    var url =urlBase+"Chat/"+document.getElementById("sessionIdInput").value;
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (xhr.readyState == XMLHttpRequest.DONE) {

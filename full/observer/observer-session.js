@@ -15,10 +15,13 @@ var chatConnection
 var chatSessionId
 var chatHubUrl
 
+//server
+var urlBase="https://localhost:5001/"
+/*var urlBase="https://localhost:5001/"*/
 
  function joinSession() {
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/join-as-observer";
+    var url =urlBase+"Session/join-as-observer";
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
@@ -74,33 +77,33 @@ function joinConferenceSession()
 }
 
 
-// screensharing
 
 // screensharing
 
 async function joinScreensharingSession()
 {
     screenConnection = new signalR.HubConnectionBuilder()
-    .withUrl(screenSharingHubUrl)
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+        .withUrl(screenSharingHubUrl)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
     try {
         await screenConnection.start();
-        console.info("screensharing Connected.");
+        console.log("screensharing Connected.");
     } catch (err) {
-        console.info(err);
+        console.log(err);
         setTimeout(5000);
     }
 
+    screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
+
+
     createNewMirror();
 
-    screenConnection.invoke("joinSession",screenSharingSessionId)
 
-
-    screenConnection.on("sentDom", (user,dom) => {
+    screenConnection.on("sentDom", (dom) => {
         var msg = JSON.parse(dom);
-        console.info("here we go2",msg)
+        console.debug("here we go2",msg)
         /*if (msg instanceof Array) {
             console.debug("here we go3",JSON.parse(subMessage))
             msg.forEach(function(subMessage) {
@@ -111,23 +114,30 @@ async function joinScreensharingSession()
         handleScreensharingMessage(msg);
         /*        }*/
     });
-    
+
     // mouse movement
-    
-    screenConnection.on("sentMousePosition", (user,x,y) => {
-        document.getElementById("mousePointer").style.position = 'absolute';
+
+    screenConnection.on("sentMousePosition", (x,y) => {
         document.getElementById("mousePointer").style.left = x + 'px';
         document.getElementById("mousePointer").style.top = y + 'px';
-        
+
     })
-    
+
+    screenConnection.on("mouseUp",()=> {
+        document.getElementById("mousePointer").src="../mouse-icons/011-mouse-1.svg";
+    })
+
+    screenConnection.on("mouseDown",()=> {
+        document.getElementById("mousePointer").src="../mouse-icons/048-click.svg";
+    })
+
     // scrolling
-    
-        
-    
-    screenConnection.on("sentScroll", (user,vertical) => {
+
+
+
+    screenConnection.on("sentScroll", (vertical) => {
         console.debug(vertical)
-        let el=document.getElementById("mirror")
+        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
         // To set the scroll
         el.scrollTop = vertical;
     })
@@ -137,8 +147,18 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var base;
+    var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+    myFrameDoc.write('<html>');
+    myFrameDoc.write('<head>');
+    myFrameDoc.write('</head>');
+    myFrameDoc.write('<body>');
+    myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+    myFrameDoc.write('</body>');
+    myFrameDoc.write('</html>');
 
-    mirror = new TreeMirror(document.getElementById("mirror"), {
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
+    mirror = new TreeMirror(m, {
         createElement: function (tagName) {
             if (tagName == 'SCRIPT') {
                 var node = document.createElement('NO-SCRIPT');
@@ -158,8 +178,9 @@ function createNewMirror()
 }
 
 function clearScreensharingPage() {
-    while (document.getElementById("mirror").firstChild) {
-        document.getElementById("mirror").removeChild(document.getElementById("mirror").firstChild);
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    while (m.firstChild) {
+        m.removeChild(m.firstChild);
     }
 }
 

@@ -10,12 +10,14 @@ var participantConferenceToken
 var OV;
 var Videosession;
 
+//sever
+var urlBase="https://localhost:5001/"
 
  function joinSession() {
 
 
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/join-as-participant";
+    var url =urlBase+"Session/join-as-participant";
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
@@ -109,7 +111,8 @@ function startMirroring()
 
     iframe.addEventListener('mousedown',mouseDown)
 
-
+    //send iframe  base
+    sendIframeBaseUrl();
 
     // mirror
 
@@ -137,14 +140,11 @@ function startMirroring()
 function reMirror()
 {
 
+
     //send clear command
     let c={'clear':'clear'}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(c))
 
-    //send the base of the page
-    var base=location.href.match(/^(.*\/)[^\/]*$/)[1];
-    let a={'base':base}
-    screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
 
     iframe.removeEventListener('mousemove',mouseMirror)
     iframe.removeEventListener('scroll',scrollMirror)
@@ -193,6 +193,14 @@ function iframeURLChange(iframe, callback) {
 
 
 // screensharing callbacks
+
+function sendIframeBaseUrl()
+{
+    //send the base of the iframe page
+    var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
+    let a={'base':base}
+    screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
+}
 
 function mouseMirror(e)
 {

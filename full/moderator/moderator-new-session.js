@@ -16,10 +16,14 @@ var chatConnection
 var chatSessionId
 var chatHubUrl
 
+// server
+var urlBase="https://localhost:5001/"
+/*var urlBase="https://localhost:5001/"*/
+
 
 function createSession()
 {
-    var url="https://localhost:5001/Session/";
+    var url=urlBase+"Session/";
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
@@ -41,7 +45,7 @@ function createSession()
 
  function joinSession() {
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/join-as-moderator";
+    var url = urlBase+"Session/join-as-moderator";
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
@@ -176,16 +180,7 @@ async function joinScreensharingSession()
 
     screenConnection.on("sentDom", (dom) => {
         var msg = JSON.parse(dom);
-        console.debug("here we go2",msg)
-        /*if (msg instanceof Array) {
-            console.debug("here we go3",JSON.parse(subMessage))
-            msg.forEach(function(subMessage) {
-                console.debug("here we go3",JSON.parse(subMessage))
-                handleMessage(JSON.parse(subMessage));
-            });
-        } else {*/
         handleScreensharingMessage(msg);
-        /*        }*/
     });
 
     // mouse movement
@@ -263,7 +258,14 @@ function handleScreensharingMessage(msg) {
         createNewMirror();
     }
     else if (msg.base)
-        base = msg.base;
+    {
+        var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+        var bt = myFrameDoc.createElement("base");
+        bt.href=msg.base
+/*        bt.setAttribute(msg.base)*/
+        myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
+    }
+
     else
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
         mirror[msg[0].f].apply(mirror, msg[1].args);
@@ -278,7 +280,7 @@ function handleScreensharingMessage(msg) {
 function stopSession()
 {
     var xhr = new XMLHttpRequest();
-    var url = "https://localhost:5001/Session/"+document.getElementById("sessionIdInput").value;
+    var url = urlBase+"Session/"+document.getElementById("sessionIdInput").value;
     xhr.open("DELETE", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
@@ -300,17 +302,6 @@ function stopSession()
     var data = "{}"
     xhr.send(data);
 }
-
-
-function startSessionRecording() {
-    
-}
-
-function stopSessionRecording() {
-    
-}
-
-
 
 
 
