@@ -111,6 +111,10 @@ function startMirroring()
 
     iframe.addEventListener('mousedown',mouseDown)
 
+    iframe.addEventListener('mouseover',mouseOver)
+
+    iframe.addEventListener('mouseout',mouseOut)
+
     //send iframe  base
     sendIframeBaseUrl();
 
@@ -238,6 +242,21 @@ function mouseDown()
     screenConnection.invoke("mouseDown",screenSharingSessionId)
 }
 
+function mouseOver(event)
+{
+    var path = getDomPath(event.target);
+    console.log(path);
+    console.info("mouse over element"+event.target + ", tag name="+ event.target.tagName)
+    screenConnection.invoke("mouseOver",screenSharingSessionId,path)
+}
+
+function mouseOut(event)
+{
+    var path = getDomPath(event.target);
+    console.info("mouse out element"+event.target + ", tag name="+ event.target.tagName)
+    screenConnection.invoke("mouseOut",screenSharingSessionId,path)
+}
+
 // closing
 
 
@@ -253,3 +272,43 @@ window.onbeforeunload = function () {
 };
 
 
+
+
+// third party
+
+
+// modificated from https://gist.github.com/karlgroves/7544592
+function getDomPath(el) {
+    var stack = [];
+    while ( el.parentNode != null ) {
+        console.log(el.nodeName);
+        var sibCount = 0;
+        var sibIndex = 0;
+        for ( var i = 0; i < el.parentNode.childNodes.length; i++ ) {
+            var sib = el.parentNode.childNodes[i];
+            if ( sib.nodeName == el.nodeName ) {
+                if ( sib === el ) {
+                    sibIndex = sibCount;
+                }
+                sibCount++;
+            }
+        }
+        if ( el.hasAttribute('id') && el.id != '' ) {
+
+            stack.unshift(el.nodeName.toLowerCase() +"[@id='"+el.id+"']");
+        } else if ( sibCount > 1 ) {
+            stack.unshift(el.nodeName.toLowerCase() + '[' + sibIndex + ']');
+        } else {
+            stack.unshift(el.nodeName.toLowerCase());
+        }
+        el = el.parentNode;
+    }
+    stack=stack.slice(1); // removes the html element
+
+    var xpath=""
+    while(stack.length>0)
+    {
+        xpath=xpath+'/'+stack.shift()
+    }
+    return xpath
+}

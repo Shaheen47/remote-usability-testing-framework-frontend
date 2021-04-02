@@ -21,6 +21,9 @@ var urlBase="https://localhost:5001/"
 /*var urlBase="https://localhost:5001/"*/
 
 
+//
+let styler
+
 function createSession()
 {
     var url=urlBase+"Session/";
@@ -43,7 +46,7 @@ function createSession()
 }
 
 
- function joinSession() {
+function joinSession() {
     var xhr = new XMLHttpRequest();
     var url = urlBase+"Session/join-as-moderator";
     xhr.open("POST", url, true);
@@ -62,7 +65,7 @@ function createSession()
             joinChatSession(chatHubUrl)
             joinScreensharingSession()
         }
-        else 
+        else
         {
             if(xhr.readyState === 4 && xhr.status === 400)
             {
@@ -98,14 +101,14 @@ function joinConferenceSession()
 // chat
 
 async function joinChatSession(chatHubUrl)
-{  
+{
     chatConnection = new signalR.HubConnectionBuilder()
-    .withUrl(chatHubUrl)
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+        .withUrl(chatHubUrl)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
     try {
-      await chatConnection.start();
+        await chatConnection.start();
         console.log("Chat Connected.");
     } catch (err) {
         console.log(err);
@@ -137,7 +140,7 @@ async function joinChatSession(chatHubUrl)
         li.textContent = senderName+" : "+ message;
         messageList.appendChild(li);
     })
-    
+
     //connect with the session
     chatConnection.invoke("joinSession",chatSessionId);
 
@@ -172,7 +175,13 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
+    var iframe=document.getElementById("mirrorIFrame").contentWindow
+
+
     screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
+
+    styler = new PseudoStyler(iframe.document);
+
 
 
     createNewMirror();
@@ -180,10 +189,10 @@ async function joinScreensharingSession()
 
     screenConnection.on("sentDom", (dom) => {
         var msg = JSON.parse(dom);
-        handleScreensharingMessage(msg);
+         handleScreensharingMessage(msg);
     });
 
-    // mouse movement
+    // mouse events
 
     screenConnection.on("sentMousePosition", (x,y) => {
         document.getElementById("mousePointer").style.left = x + 'px';
@@ -198,6 +207,22 @@ async function joinScreensharingSession()
     screenConnection.on("mouseDown",()=> {
         document.getElementById("mousePointer").src="../mouse-icons/048-click.svg";
     })
+
+
+
+    screenConnection.on("mouseOver",(elementXpath)=> {
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        styler.toggleStyle(x, ':hover');
+    })
+
+    screenConnection.on("mouseOut",(elementXpath)=> {
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        styler.toggleStyle(x, ':hover');
+
+    })
+
 
     // scrolling
 
@@ -214,34 +239,18 @@ async function joinScreensharingSession()
 
 function createNewMirror()
 {
-    var base;
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-    myFrameDoc.write('<html>');
+   /* myFrameDoc.write('<html>');
     myFrameDoc.write('<head>');
     myFrameDoc.write('</head>');
-    myFrameDoc.write('<body>');
+    myFrameDoc.write('<body>');*/
     myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
-    myFrameDoc.write('</body>');
-    myFrameDoc.write('</html>');
+/*    myFrameDoc.write('</body>');
+    myFrameDoc.write('</html>');*/
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
-    mirror = new TreeMirror(m, {
-        createElement: function (tagName) {
-            if (tagName == 'SCRIPT') {
-                var node = document.createElement('NO-SCRIPT');
-                node.style.display = 'none';
-                return node;
-            }
-
-            if (tagName == 'HEAD') {
-                var node = document.createElement('HEAD');
-                node.appendChild(document.createElement('BASE'));
-                node.firstChild.href = base;
-                return node;
-            }
-        }
-    });
+    mirror = new TreeMirror(m);
 
 }
 
@@ -252,24 +261,24 @@ function clearScreensharingPage() {
     }
 }
 
-function handleScreensharingMessage(msg) {
+async function handleScreensharingMessage(msg) {
     if (msg.clear) {
         clearScreensharingPage();
         createNewMirror();
-    }
-    else if (msg.base)
-    {
+
+    } else if (msg.base) {
         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
         var bt = myFrameDoc.createElement("base");
-        bt.href=msg.base
-/*        bt.setAttribute(msg.base)*/
+        bt.href = msg.base
+        /*        bt.setAttribute(msg.base)*/
         myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-    }
+    } else {
 
-    else
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
-        mirror[msg[0].f].apply(mirror, msg[1].args);
-    console.debug("mirror[msg[0].f].apply(mirror, msg[1].args) called")
+        await mirror[msg[0].f].apply(mirror, msg[1].args);
+/*        if (msg[0].f === "initialize")
+            await styler.loadDocumentStyles();*/
+    }
 }
 
 
@@ -313,3 +322,6 @@ function leaveVideoSession() {
 window.onbeforeunload = function () {
     if (Videosession) Videosession.disconnect()
 };
+
+
+// new for mouse events
