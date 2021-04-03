@@ -67,7 +67,7 @@ function joinConferenceSession()
 async function joinScreensharingSession()
 {
 
-    //foin the session
+    // joining the session
     screenConnection = new signalR.HubConnectionBuilder()
         .withUrl(screenSharingHubUrl)
         .configureLogging(signalR.LogLevel.Information)
@@ -115,6 +115,9 @@ function startMirroring()
 
     iframe.addEventListener('mouseout',mouseOut)
 
+    iframe.addEventListener('input',inputChanged)
+    iframe.addEventListener('paste',inputChanged)
+
     //send iframe  base
     sendIframeBaseUrl();
 
@@ -125,15 +128,14 @@ function startMirroring()
             let args=[rootId,children]
             let a=[{'f':'initialize'},{'args':args}]
             screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-            /*                args: [rootId, children]*/
         },
 
         applyChanged: function (removed, addedOrMoved, attributes, text) {
             let args=[removed,addedOrMoved,attributes,text]
             let a=[{'f':'applyChanged'},{'args':args}]
-            console.debug("attributes",attributes)
-            console.debug("addedOrMoved",addedOrMoved)
-            console.debug("text",text)
+/*            console.info("attributes",attributes)
+            console.info("addedOrMoved",addedOrMoved)
+            console.info("text",text)*/
             screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
             /*          args: [removed, addedOrMoved, attributes, text]*/
         }
@@ -218,7 +220,7 @@ function mouseMirror(e)
     var e = window.event;
     var posX = e.clientX;
     var posY = e.clientY;
-    console.debug("mouse :",posX," ",posY)
+/*    console.debug("mouse :",posX," ",posY)*/
     screenConnection.invoke("sendMousePosition",screenSharingSessionId,e.x,e.y)
 
 }
@@ -226,35 +228,50 @@ function mouseMirror(e)
 function scrollMirror(e)
 {
     let el=iframe.document.documentElement
-    console.debug(el.scrollTop," ",el.scrollLeft)
+/*    console.debug(el.scrollTop," ",el.scrollLeft)*/
     screenConnection.invoke("sendScroll",screenSharingSessionId,el.scrollTop)
 }
 
 function mouseUp()
 {
-    console.debug("mouse up")
     screenConnection.invoke("mouseUp",screenSharingSessionId)
 }
 
 function mouseDown()
 {
-    console.debug("mouse down")
     screenConnection.invoke("mouseDown",screenSharingSessionId)
 }
 
 function mouseOver(event)
 {
     var path = getDomPath(event.target);
-    console.log(path);
-    console.info("mouse over element"+event.target + ", tag name="+ event.target.tagName)
     screenConnection.invoke("mouseOver",screenSharingSessionId,path)
 }
 
 function mouseOut(event)
 {
     var path = getDomPath(event.target);
-    console.info("mouse out element"+event.target + ", tag name="+ event.target.tagName)
     screenConnection.invoke("mouseOut",screenSharingSessionId,path)
+}
+
+function inputChanged(event)
+{
+    var path = getDomPath(event.target);
+    var content=""
+    if(event.target.type==='checkbox')
+        content = String(event.target.checked)
+    else if(event.target.type==='radio')
+        content = String(event.target.checked)
+/*    else if(event.target.type==='select')
+        content = String(event.target.value)*/
+    else if(event.target.type==='select-one')
+        content = String(event.target.selectedIndex)
+    else if(event.target.type==='select-multiple')
+        content = String(event.target.value)
+    else
+        content= event.target.value
+    screenConnection.invoke("inputChanged",screenSharingSessionId,path,content)
+    console.info("inputChanged: ",content)
 }
 
 // closing
@@ -274,14 +291,13 @@ window.onbeforeunload = function () {
 
 
 
-// third party
+// utilites
 
 
 // modificated from https://gist.github.com/karlgroves/7544592
 function getDomPath(el) {
     var stack = [];
     while ( el.parentNode != null ) {
-        console.log(el.nodeName);
         var sibCount = 0;
         var sibIndex = 0;
         for ( var i = 0; i < el.parentNode.childNodes.length; i++ ) {
@@ -297,7 +313,7 @@ function getDomPath(el) {
 
             stack.unshift(el.nodeName.toLowerCase() +"[@id='"+el.id+"']");
         } else if ( sibCount > 1 ) {
-            stack.unshift(el.nodeName.toLowerCase() + '[' + sibIndex + ']');
+            stack.unshift(el.nodeName.toLowerCase() + '[' + (sibIndex+1) + ']');
         } else {
             stack.unshift(el.nodeName.toLowerCase());
         }

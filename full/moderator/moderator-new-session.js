@@ -23,6 +23,7 @@ var urlBase="https://localhost:5001/"
 
 //
 let styler
+let stylerInitialized=false
 
 function createSession()
 {
@@ -158,8 +159,6 @@ function sendChatMessage()
 // screensharing
 
 
-// screensharing
-
 async function joinScreensharingSession()
 {
     screenConnection = new signalR.HubConnectionBuilder()
@@ -213,6 +212,11 @@ async function joinScreensharingSession()
     screenConnection.on("mouseOver",(elementXpath)=> {
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
+        if (stylerInitialized===false)
+        {
+            styler.loadDocumentStyles();
+            stylerInitialized=true
+        }
         styler.toggleStyle(x, ':hover');
     })
 
@@ -223,13 +227,28 @@ async function joinScreensharingSession()
 
     })
 
-
+    // inputs
+    screenConnection.on("inputChanged",(elementXpath,inputContent)=> {
+        var node = iframe.document.evaluate('/html/body/div' + elementXpath, iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x = node.singleNodeValue
+        if(x.type==='checkbox')
+        {
+            if(inputContent==="true")
+                x.checked=true
+            else
+                x.checked=false
+        }
+        else if(x.type==='radio')
+            x.checked = inputContent
+        else if(x.type==='select-one')
+            x.selectedIndex = inputContent
+        else
+            x.value = inputContent
+        console.info("inputChanged: ",inputContent," , ",elementXpath)
+    })
     // scrolling
 
-
-
     screenConnection.on("sentScroll", (vertical) => {
-        console.debug(vertical)
         let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
         // To set the scroll
         el.scrollTop = vertical;
@@ -276,7 +295,7 @@ async function handleScreensharingMessage(msg) {
 
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
         await mirror[msg[0].f].apply(mirror, msg[1].args);
-/*        if (msg[0].f === "initialize")
+        /*if (msg[0].f === "initialize")
             await styler.loadDocumentStyles();*/
     }
 }
