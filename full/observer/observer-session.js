@@ -142,6 +142,10 @@ async function joinScreensharingSession()
         el.scrollTop = vertical;
     })
 
+    screenConnection.on("leaveSession", () => {
+        screenConnection.connection.stop()
+    })
+
 }
 
 function createNewMirror()
@@ -239,6 +243,10 @@ async function joinChatSession(chatHubUrl)
         let li = document.createElement('li');
         li.textContent = senderName+" : "+ message;
         messageList.appendChild(li);
+    })
+
+    chatConnection.on("leaveSession", () => {
+        chatConnection.connection.stop()
     })
 
     //connect with the session

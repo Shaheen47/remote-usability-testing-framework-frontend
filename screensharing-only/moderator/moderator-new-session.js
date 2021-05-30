@@ -6,20 +6,10 @@ var mirror
 var screenConnection
 
 
-//videoconferencing
-var moderatorConferenceToken
-var OV;
-var Videosession;
-
-// chat
-var chatConnection
-var chatSessionId
-var chatHubUrl
-
 // server
-var urlBase="https://localhost:5001/"
-/*var urlBase="https://localhost:5001/"*/
-
+var urlBase="https://localhost:5005/"
+var urlWithoutRec=urlBase+"Session/create-session";
+var urlWithRec=urlBase+"Session/create-session-with-recording";
 
 //
 let styler
@@ -27,138 +17,35 @@ let stylerInitialized=false
 
 function createSession()
 {
-    var url=urlBase+"Session/";
 
+    var url;
+    if(document.getElementById("recordCheckBox").checked===true)
+        url=urlWithRec
+    else
+        url=urlWithoutRec
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 201) {
             var json = JSON.parse(xhr.responseText);
-            document.getElementById("sessionIdInput").value=json.id;
+            document.getElementById("sessionIdInput").value=json.sessionId;
+            screenSharingSessionId=json.sessionId
+            screenSharingHubUrl=json.hubUrl
         }
     };
     var data
-    if(document.getElementById("recordCheckBox").checked===true)
-        data=JSON.stringify({"isRecorded":true})
-    else
-        data=JSON.stringify({"isRecorded":false})
+    data=JSON.stringify("{}")
     xhr.send(data);
 }
 
 
 function joinSession() {
-    var xhr = new XMLHttpRequest();
-    var url = urlBase+"Session/join-as-moderator";
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 201) {
-            var json = JSON.parse(xhr.responseText);
-            console.debug(json)
-            chatSessionId=json.chatSessionId
-            chatHubUrl=json.chatHubUrl
-            moderatorConferenceToken=json.moderatorConferenceToken
-            screenSharingSessionId=json.screenSharingSessionId
-            screenSharingHubUrl=json.screenSharingHubUrl
-            //hide and show somethings
-            joinConferenceSession()
-            joinChatSession(chatHubUrl)
+            styler = new PseudoStyler(document.getElementById("mirrorIFrame").contentWindow.document);
             joinScreensharingSession()
-        }
-        else
-        {
-            if(xhr.readyState === 4 && xhr.status === 400)
-            {
-                console.debug(xhr.responseText)
-            }
-        }
-    };
-    var data = JSON.stringify({"sessionId":document.getElementById("sessionIdInput").value});
-    xhr.send(data);
-}
-
-
-function joinConferenceSession()
-{
-    OV = new OpenVidu();
-    Videosession = OV.initSession();
-
-    Videosession.on("streamCreated", function (event) {
-        Videosession.subscribe(event.stream, "participanStream");
-    });
-
-    Videosession.connect(moderatorConferenceToken)
-        .then(() => {
-            var publisher = OV.initPublisher("ModeratorStream");
-            Videosession.publish(publisher);
-        })
-        .catch(error => {
-            console.log("There was an error connecting to the Videosession:", error.code, error.message);
-        });
-}
-
-
-// chat
-
-async function joinChatSession(chatHubUrl)
-{
-    chatConnection = new signalR.HubConnectionBuilder()
-        .withUrl(chatHubUrl)
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
-
-    try {
-        await chatConnection.start();
-        console.log("Chat Connected.");
-    } catch (err) {
-        console.log(err);
-        setTimeout(5000);
-    }
-
-    // chatConnection.onclose(initializeChat);
-
-
-    // messages listeners
-
-    chatConnection.on("userJoined", (message) => {
-        var messageList=document.getElementById("chatList");
-        let li = document.createElement('li');
-        li.textContent = "an Observer has joined";
-        messageList.appendChild(li);
-    })
-
-    chatConnection.on("userLeft", (message) => {
-        var messageList=document.getElementById("chatList");
-        let li = document.createElement('li');
-        li.textContent = "an Observer has left";
-        messageList.appendChild(li);
-    })
-
-    chatConnection.on("leaveSession", () => {
-        chatConnection.connection.stop()
-    })
-
-    chatConnection.on("messageSent", (senderName,message) => {
-        var messageList=document.getElementById("chatList");
-        let li = document.createElement('li');
-        li.textContent = senderName+" : "+ message;
-        messageList.appendChild(li);
-    })
-
-
-    //connect with the session
-    chatConnection.invoke("joinSession",chatSessionId);
 
 }
 
-function sendChatMessage()
-{
-    var sendername=document.getElementById("senderName").value;
-    var chatmessage=document.getElementById("chatMessage").value;
-    chatConnection.invoke("sendMessage",chatSessionId,sendername, chatmessage);
-    document.getElementById("chatMessage").value="";
-}
 
 
 // screensharing
@@ -259,10 +146,6 @@ async function joinScreensharingSession()
         el.scrollTop = vertical;
     })
 
-    screenConnection.on("leaveSession", () => {
-        screenConnection.connection.stop()
-    })
-
 }
 
 function createNewMirror()
@@ -324,8 +207,6 @@ function stopSession()
         if (xhr.readyState === 4 && xhr.status === 204) {
             var json = JSON.parse(xhr.responseText);
             //hide and show somethings
-            leaveVideoSession()
-            chatConnection.close()
             screenConnection.close()
         }
         else
@@ -338,24 +219,9 @@ function stopSession()
     };
     var data = "{}"
     xhr.send(data);
-
-    // close chat session
-    chatConnection.invoke("closeSession",chatSessionId);
-
-    // close screensharing session
-    screenConnection.invoke("closeSession",screenSharingSessionId);
 }
 
 
-
-
-function leaveVideoSession() {
-    Videosession.disconnect();
-}
-
-window.onbeforeunload = function () {
-    if (Videosession) Videosession.disconnect()
-};
 
 
 // new for mouse events

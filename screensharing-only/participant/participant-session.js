@@ -5,59 +5,16 @@ var screenSharingHubUrl
 var screenConnection
 
 
-//videoconferencing
-var participantConferenceToken
-var OV;
-var Videosession;
 
 //sever
-var urlBase="https://localhost:5001/"
+var urlBase="https://localhost:5005/"
 
  function joinSession() {
-
-
-    var xhr = new XMLHttpRequest();
-    var url =urlBase+"Session/join-as-participant";
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 201) {
-            var json = JSON.parse(xhr.responseText);
-            console.debug(json)
-            participantConferenceToken=json.participantConferenceToken
-            screenSharingSessionId=json.screenSharingSessionId
-            screenSharingHubUrl=json.screenSharingHubUrl
-            //hide and show somethings
-            joinConferenceSession()
-            joinScreensharingSession()
-
-        }
-    };
-    var data = JSON.stringify({"sessionId":document.getElementById("sessionIdInput").value});
-    xhr.send(data);
+     screenSharingSessionId=document.getElementById("sessionIdInput").value
+     screenSharingHubUrl="https://localhost:5005/ScreenMirroringHubWithRecording"
+    joinScreensharingSession()
 }
 
-
-// videoConferencing
-
-function joinConferenceSession()
-{
-    OV = new OpenVidu();
-    Videosession = OV.initSession();
-
-    Videosession.on("streamCreated", function (event) {
-        Videosession.subscribe(event.stream, "participanStream");
-    });
-
-    Videosession.connect(participantConferenceToken)
-        .then(() => {
-            var publisher = OV.initPublisher("ModeratorStream");
-            Videosession.publish(publisher);
-        })
-        .catch(error => {
-            console.log("There was an error connecting to the Videosession:", error.code, error.message);
-        });
-}
 
 
 
@@ -80,11 +37,6 @@ async function joinScreensharingSession()
         console.log(err);
         setTimeout(5000);
     }
-
-    screenConnection.on("leaveSession", () => {
-        screenConnection.connection.stop()
-    })
-
 
     screenConnection.invoke("joinSessionAsPublisher",screenSharingSessionId)
 
@@ -282,16 +234,6 @@ function inputChanged(event)
 // closing
 
 
-
-
-
-function leaveVideoSession() {
-    Videosession.disconnect();
-}
-
-window.onbeforeunload = function () {
-    if (Videosession) Videosession.disconnect()
-};
 
 
 
