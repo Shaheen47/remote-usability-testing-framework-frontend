@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="../moderator-sessions.js"></script>
+
     <title>Title</title>
 </head>
 <body>
+
+
+<div    style="top: 1%;left: 1% ;width: 40%; height: 90%;position: absolute ;border: solid" >
+<table style="width:100% ;border: 1px solid black;padding: 15px;text-align: center;border-spacing: 5px;" id="sessions-table" border=1 frame=hsides rules=rows>
+    <tr>
+        <th> Session Id </th>
+        <th> Session Name </th>
+        <th> Session Date </th>
+    </tr>
+</table>
+</div>
+
+
+<div   style="top: 1%;left: 45%   ;width: 30%; height: 10%; position: absolute;border: solid ;display: inline-block">
+    <label for="sessionIdInput" style="top: 5%;left: 10%  ;position: relative" >Session Id:</label>
+    <input type="text" id="sessionIdInput" style="top: 5%;left: 20%;position: relative"></input>
+    <button onclick="replySession()" style="top: 40%;left: 0%  ;position: relative">Reply session</button>
+</div>
 
 </body>
 </html>

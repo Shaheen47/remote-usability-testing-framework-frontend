@@ -20,6 +20,19 @@ var urlBase="https://localhost:5001/"
 let styler
 let stylerInitialized=false
 
+
+window.addEventListener("load", f);
+
+function f()
+{
+    var queryString = window.location.search;
+    var urlParams = new URLSearchParams(queryString);
+    var sessionId = urlParams.get('sessionId');
+    document.getElementById("sessionIdInput").value=sessionId;
+
+}
+
+
  function prepareSessionReply()
 {
     getSessionInfo()
@@ -248,34 +261,18 @@ async function joinScreensharingSession()
 
 function createNewMirror()
 {
-    var base;
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-    myFrameDoc.write('<html>');
-    myFrameDoc.write('<head>');
-    myFrameDoc.write('</head>');
-    myFrameDoc.write('<body>');
+    /* myFrameDoc.write('<html>');
+     myFrameDoc.write('<head>');
+     myFrameDoc.write('</head>');
+     myFrameDoc.write('<body>');*/
     myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
-    myFrameDoc.write('</body>');
-    myFrameDoc.write('</html>');
+    /*    myFrameDoc.write('</body>');
+        myFrameDoc.write('</html>');*/
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
-    mirror = new TreeMirror(m, {
-        createElement: function (tagName) {
-            if (tagName == 'SCRIPT') {
-                var node = document.createElement('NO-SCRIPT');
-                node.style.display = 'none';
-                return node;
-            }
-
-            if (tagName == 'HEAD') {
-                var node = document.createElement('HEAD');
-                node.appendChild(document.createElement('BASE'));
-                node.firstChild.href = base;
-                return node;
-            }
-        }
-    });
+    mirror = new TreeMirror(m);
 
 }
 
@@ -286,17 +283,24 @@ function clearScreensharingPage() {
     }
 }
 
-function handleScreensharingMessage(msg) {
+async function handleScreensharingMessage(msg) {
     if (msg.clear) {
         clearScreensharingPage();
         createNewMirror();
-    }
-    else if (msg.base)
-        base = msg.base;
-    else
+
+    } else if (msg.base) {
+        var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+        var bt = myFrameDoc.createElement("base");
+        bt.href = msg.base
+        /*        bt.setAttribute(msg.base)*/
+        myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
+    } else {
+
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
-        mirror[msg[0].f].apply(mirror, msg[1].args);
-    console.debug("mirror[msg[0].f].apply(mirror, msg[1].args) called")
+        await mirror[msg[0].f].apply(mirror, msg[1].args);
+        /*if (msg[0].f === "initialize")
+            await styler.loadDocumentStyles();*/
+    }
 }
 
 
