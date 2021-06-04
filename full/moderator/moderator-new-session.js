@@ -259,6 +259,25 @@ async function joinScreensharingSession()
         el.scrollTop = vertical;
     })
 
+    // url parameter change
+
+    screenConnection.on("urlParameterChange", (queryString) => {
+        // Construct URLSearchParams object instance from current URL querystring.
+        console.debug('queryString:',queryString)
+
+/*
+        document.getElementById("mirrorIFrame").src= "http://localhost:3000/"+queryString
+        console.debug('src',document.getElementById("mirrorIFrame").src)
+        console.debug('base',document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").href)
+*/
+
+
+        var newurl = document.getElementById("mirrorIFrame").contentWindow.location.protocol + "//" + document.getElementById("mirrorIFrame").contentWindow.location.host  + queryString;
+        console.debug('new url',newurl)
+        document.getElementById("mirrorIFrame").contentWindow.location.replace(newurl)
+
+    })
+
     screenConnection.on("leaveSession", () => {
         screenConnection.connection.stop()
     })
@@ -294,13 +313,15 @@ async function handleScreensharingMessage(msg) {
         clearScreensharingPage();
         createNewMirror();
 
-    } else if (msg.base) {
+    }
+    /*else if (msg.base) {
         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
         var bt = myFrameDoc.createElement("base");
         bt.href = msg.base
-        /*        bt.setAttribute(msg.base)*/
+        /!*        bt.setAttribute(msg.base)*!/
         myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-    } else {
+    } */
+    else {
 
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
         await mirror[msg[0].f].apply(mirror, msg[1].args);

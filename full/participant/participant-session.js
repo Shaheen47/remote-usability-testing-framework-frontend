@@ -123,6 +123,36 @@ function startMirroring()
     iframe.addEventListener('input',inputChanged)
     iframe.addEventListener('paste',inputChanged)
 
+    iframe.history.pushState = ( f => function pushState(){
+        var ret = f.apply(this, arguments);
+        iframe.window.dispatchEvent(new Event('pushstate'));
+        iframe.window.dispatchEvent(new Event('locationchange'));
+        return ret;
+    })(iframe.history.pushState);
+
+    iframe.history.replaceState = ( f => function replaceState(){
+        var ret = f.apply(this, arguments);
+        iframe.window.dispatchEvent(new Event('replacestate'));
+        iframe.window.dispatchEvent(new Event('locationchange'));
+        return ret;
+    })(iframe.history.replaceState);
+
+    iframe.window.addEventListener('popstate',()=>{
+        iframe.window.dispatchEvent(new Event('locationchange'))
+    });
+
+    iframe.addEventListener('locationchange', function(){
+        console.debug('location changed!');
+        const queryString = iframe.location.search;
+        var parmeters=iframe.location.pathname;
+        if(parmeters=='/')
+            parmeters='';
+        console.debug(queryString);
+        screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
+
+
+    })
+
     //send iframe  base
     sendIframeBaseUrl();
 
@@ -137,10 +167,11 @@ function startMirroring()
 
         applyChanged: function (removed, addedOrMoved, attributes, text) {
             let args=[removed,addedOrMoved,attributes,text]
-            let a=[{'f':'applyChanged'},{'args':args}]
-/*            console.info("attributes",attributes)
-            console.info("addedOrMoved",addedOrMoved)
-            console.info("text",text)*/
+            let a=[{'f':'applyChanged:'},{'args':args}]
+          /**/  console.debug('dom changed:')
+/*            console.debug("attributes:",attributes)
+            console.debug("addedOrMoved:",addedOrMoved)
+            console.debug("text:",text)*/
             screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
             /*          args: [removed, addedOrMoved, attributes, text]*/
         }
@@ -211,6 +242,7 @@ function sendIframeBaseUrl()
     var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
     let a={'base':base}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
+    console.debug('base changed:'+base)
 }
 
 function mouseMirror(e)
@@ -251,6 +283,7 @@ function mouseOver(event)
 {
     var path = getDomPath(event.target);
     screenConnection.invoke("mouseOver",screenSharingSessionId,path)
+/*    console.debug('mouseOver:'+path)*/
 }
 
 function mouseOut(event)
@@ -282,7 +315,12 @@ function inputChanged(event)
 // closing
 
 
-
+function urlParametersChange()
+{
+    console.debug('location changed!');
+    const queryString = iframe.location.search;
+    screenConnection.invoke("urlParameterChange",screenSharingSessionId,queryString);
+}
 
 
 function leaveVideoSession() {
