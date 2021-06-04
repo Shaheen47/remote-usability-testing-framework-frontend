@@ -66,7 +66,8 @@ var TreeMirror = (function () {
         var node = this.idMap[nodeData.id];
         if (node)
             return node;
-        var doc = this.root.ownerDocument;
+        // var doc = this.root.ownerDocument;
+        var doc = this.root.ownerDocument.getElementById('mirror');
         if (doc === null)
             doc = this.root;
         switch (nodeData.nodeType) {
@@ -81,9 +82,11 @@ var TreeMirror = (function () {
                 break;
             case Node.ELEMENT_NODE:
                 if (this.delegate && this.delegate.createElement)
+                    //node = this.delegate.createElement(nodeData.tagName);
                     node = this.delegate.createElement(nodeData.tagName);
                 if (!node)
-                    node = doc.createElement(nodeData.tagName);
+                    //node = doc.createElement(nodeData.tagName);
+                    node = doc.appendChild(nodeData)
                 Object.keys(nodeData.attributes).forEach(function (name) {
                     if (!_this.delegate ||
                         !_this.delegate.setAttribute ||

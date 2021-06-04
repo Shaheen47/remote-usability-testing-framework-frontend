@@ -314,17 +314,33 @@ async function handleScreensharingMessage(msg) {
         createNewMirror();
 
     }
-    /*else if (msg.base) {
+     else if (msg.base) {
+         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+         var bt = myFrameDoc.createElement("base");
+         bt.href = msg.base
+         /*        bt.setAttribute(msg.base)*/
+         myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
+     }
+/*    else if (msg.base) {
         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-        var bt = myFrameDoc.createElement("base");
+        var bt = myFrameDoc.getElementsByTagName("base");
         bt.href = msg.base
+        bt.setAttribute(msg.base)
         /!*        bt.setAttribute(msg.base)*!/
-        myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-    } */
+
+    }*/
+/*    else if (msg.base) {
+
+    }*/
     else {
 
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
         await mirror[msg[0].f].apply(mirror, msg[1].args);
+/*        console.debug("dom :",msg[1].args)*/
+        console.debug("removed:",msg[1].args[0])
+        console.debug("addedOrMoved:",msg[1].args[1])
+        console.debug("attributes:",msg[1].args[2])
+        console.debug("text:",msg[1].args[3])
         /*if (msg[0].f === "initialize")
             await styler.loadDocumentStyles();*/
     }

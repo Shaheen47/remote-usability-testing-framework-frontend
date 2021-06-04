@@ -143,12 +143,17 @@ function startMirroring()
 
     iframe.addEventListener('locationchange', function(){
         console.debug('location changed!');
-        const queryString = iframe.location.search;
-        var parmeters=iframe.location.pathname;
-        if(parmeters=='/')
-            parmeters='';
-        console.debug(queryString);
-        screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
+/*        reMirror()*/
+        // const queryString = iframe.location.search;
+        // var parmeters=iframe.location.pathname;
+        // if(parmeters=='/')
+        //     parmeters='';
+        // console.debug(queryString);
+        // var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
+        // let a={'base':base+parmeters+queryString}
+        // screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
+        // console.debug('base changed:'+base)
+        // // screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
 
 
     })
@@ -167,11 +172,12 @@ function startMirroring()
 
         applyChanged: function (removed, addedOrMoved, attributes, text) {
             let args=[removed,addedOrMoved,attributes,text]
-            let a=[{'f':'applyChanged:'},{'args':args}]
+            let a=[{'f':'applyChanged'},{'args':args}]
           /**/  console.debug('dom changed:')
-/*            console.debug("attributes:",attributes)
+            console.debug("removed:",removed)
+            console.debug("attributes:",attributes)
             console.debug("addedOrMoved:",addedOrMoved)
-            console.debug("text:",text)*/
+            console.debug("text:",text)
             screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
             /*          args: [removed, addedOrMoved, attributes, text]*/
         }
@@ -238,9 +244,16 @@ function iframeURLChange(iframe, callback) {
 
 function sendIframeBaseUrl()
 {
+    const queryString = iframe.location.search;
+    var parmeters=iframe.location.pathname;
+    if(parmeters=='/')
+        parmeters='';
+    console.debug(queryString);
+
+
     //send the base of the iframe page
     var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
-    let a={'base':base}
+    let a={'base':base+parmeters+queryString}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
     console.debug('base changed:'+base)
 }
