@@ -254,7 +254,8 @@ async function joinScreensharingSession()
     // scrolling
 
     screenConnection.on("sentScroll", (vertical) => {
-        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+        //let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+        let el=document.getElementById("mirrorIFrame").contentDocument
         // To set the scroll
         el.scrollTop = vertical;
     })
@@ -291,13 +292,13 @@ function createNewMirror()
     myFrameDoc.write('<head>');
     myFrameDoc.write('</head>');
     myFrameDoc.write('<body>');*/
-    myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+    // myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
 /*    myFrameDoc.write('</body>');
     myFrameDoc.write('</html>');*/
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
-    mirror = new TreeMirror(m);
+    mirror = new TreeMirror(myFrameDoc);
 
 }
 
@@ -314,13 +315,13 @@ async function handleScreensharingMessage(msg) {
         createNewMirror();
 
     }
-     else if (msg.base) {
+     /*else if (msg.base) {
          var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
          var bt = myFrameDoc.createElement("base");
          bt.href = msg.base
-         /*        bt.setAttribute(msg.base)*/
+         /!*        bt.setAttribute(msg.base)*!/
          myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-     }
+     }*/
 /*    else if (msg.base) {
         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
         var bt = myFrameDoc.getElementsByTagName("base");
@@ -329,9 +330,8 @@ async function handleScreensharingMessage(msg) {
         /!*        bt.setAttribute(msg.base)*!/
 
     }*/
-/*    else if (msg.base) {
-
-    }*/
+    else if (msg.base) {
+    }
     else {
 
         /* mirror['initialize'].apply(mirror, msg[1].args);*/
