@@ -66,7 +66,7 @@ var TreeMirror = (function () {
         var node = this.idMap[nodeData.id];
         if (node)
             return node;
-        var doc = this.root;
+        var doc = this.root.ownerDocument;
         if (doc === null)
             doc = this.root;
         switch (nodeData.nodeType) {

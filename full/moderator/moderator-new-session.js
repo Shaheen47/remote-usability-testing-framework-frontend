@@ -215,54 +215,57 @@ async function joinScreensharingSession()
 
 
 
-    // screenConnection.on("mouseOver",(elementXpath)=> {
-    //     // var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    //     var node=document.getElementById('mirror').evaluate('/html/body/div'+elementXpath,document.getElementById('mirror'), null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    //     var x=node.singleNodeValue
-    //     if (stylerInitialized===false)
-    //     {
-    //         styler.loadDocumentStyles();
-    //         stylerInitialized=true
-    //     }
-    //     styler.toggleStyle(x, ':hover');
-    // })
-    //
-    // screenConnection.on("mouseOut",(elementXpath)=> {
-    //     var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    //     var x=node.singleNodeValue
-    //     styler.toggleStyle(x, ':hover');
-    //
-    // })
-    //
-    // // inputs
-    // screenConnection.on("inputChanged",(elementXpath,inputContent)=> {
-    //     var node = iframe.document.evaluate('/html/body/div' + elementXpath, iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    //     var x = node.singleNodeValue
-    //     if(x.type==='checkbox')
-    //     {
-    //         if(inputContent==="true")
-    //             x.checked=true
-    //         else
-    //             x.checked=false
-    //     }
-    //     else if(x.type==='radio')
-    //         x.checked = inputContent
-    //     else if(x.type==='select-one')
-    //         x.selectedIndex = inputContent
-    //     else
-    //         x.value = inputContent
-    //     console.info("inputChanged: ",inputContent," , ",elementXpath)
-    // })
-    // scrolling
-    //
-    // screenConnection.on("sentScroll", (vertical) => {
-    //     //let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-    //     let el=document.getElementById("mirrorIFrame").contentDocument
-    //     // To set the scroll
-    //     el.scrollTop = vertical;
-    // })
+    screenConnection.on("mouseOver",(elementXpath)=> {
+        console.debug('mouseover begin')
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        if (stylerInitialized===false)
+        {
+            styler.loadDocumentStyles();
+            stylerInitialized=true
+        }
+        styler.toggleStyle(x, ':hover');
+        console.debug('mouseOver end')
+    })
 
-    // url parameter change
+    screenConnection.on("mouseOut",(elementXpath)=> {
+        console.debug('mouseOut begin')
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        styler.toggleStyle(x, ':hover');
+        console.debug('mouseOut end')
+
+
+    })
+
+    // inputs
+    screenConnection.on("inputChanged",(elementXpath,inputContent)=> {
+        var node = iframe.document.evaluate('/html/body/div' + elementXpath, iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x = node.singleNodeValue
+        if(x.type==='checkbox')
+        {
+            if(inputContent==="true")
+                x.checked=true
+            else
+                x.checked=false
+        }
+        else if(x.type==='radio')
+            x.checked = inputContent
+        else if(x.type==='select-one')
+            x.selectedIndex = inputContent
+        else
+            x.value = inputContent
+        console.info("inputChanged: ",inputContent," , ",elementXpath)
+    })
+    scrolling
+
+    screenConnection.on("sentScroll", (vertical) => {
+        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+        //let el=document.getElementById("mirrorIFrame").contentDocument
+        // To set the scroll
+        el.scrollTop = vertical;
+    })
+
 
 //     screenConnection.on("urlParameterChange", (queryString) => {
 //         // Construct URLSearchParams object instance from current URL querystring.
@@ -290,18 +293,9 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-   /* myFrameDoc.write('<html>');
-    myFrameDoc.write('<head>');
-    myFrameDoc.write('</head>');
-    myFrameDoc.write('<body>');*/
      myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
-/*    myFrameDoc.write('</body>');
-    myFrameDoc.write('</html>');*/
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-    // let m=document.getElementById("mirror")
-    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
-    // mirror = new TreeMirror(myFrameDoc);
     mirror = new TreeMirror(m, {
         createElement: function(tagName) {
             if (tagName == 'SCRIPT') {
@@ -334,34 +328,12 @@ async function handleScreensharingMessage(msg) {
         createNewMirror();
 
     }
-     /*else if (msg.base) {
-         var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-         var bt = myFrameDoc.createElement("base");
-         bt.href = msg.base
-         /!*        bt.setAttribute(msg.base)*!/
-         myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-     }*/
-/*    else if (msg.base) {
-        var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-        var bt = myFrameDoc.getElementsByTagName("base");
-        bt.href = msg.base
-        bt.setAttribute(msg.base)
-        /!*        bt.setAttribute(msg.base)*!/
 
-    }*/
     else if (msg.base) {
     }
     else {
 
-        /* mirror['initialize'].apply(mirror, msg[1].args);*/
         await mirror[msg[0].f].apply(mirror, msg[1].args);
-/*        console.debug("dom :",msg[1].args)*/
-        console.debug("removed:",msg[1].args[0])
-        console.debug("addedOrMoved:",msg[1].args[1])
-        console.debug("attributes:",msg[1].args[2])
-        console.debug("text:",msg[1].args[3])
-        /*if (msg[0].f === "initialize")
-            await styler.loadDocumentStyles();*/
     }
 }
 
