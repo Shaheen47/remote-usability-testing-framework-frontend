@@ -179,13 +179,13 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
-    // var iframe=document.getElementById("mirrorIFrame").contentWindow
+     var iframe=document.getElementById("mirrorIFrame").contentWindow
 
 
     screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
 
-    // styler = new PseudoStyler(iframe.document);
-    styler = new PseudoStyler(document.getElementById('mirror'));
+     styler = new PseudoStyler(iframe.document);
+   // styler = new PseudoStyler(document.getElementById('mirror'));
 
 
 
@@ -289,17 +289,17 @@ async function joinScreensharingSession()
 
 function createNewMirror()
 {
-    // var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
+    var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
    /* myFrameDoc.write('<html>');
     myFrameDoc.write('<head>');
     myFrameDoc.write('</head>');
     myFrameDoc.write('<body>');*/
-    // myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+     myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
 /*    myFrameDoc.write('</body>');
     myFrameDoc.write('</html>');*/
 
-    // let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-    let m=document.getElementById("mirror")
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    // let m=document.getElementById("mirror")
     /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
     // mirror = new TreeMirror(myFrameDoc);
     mirror = new TreeMirror(m, {
