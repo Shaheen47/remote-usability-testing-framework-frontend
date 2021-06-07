@@ -145,31 +145,6 @@ function startMirroring()
     iframe.addEventListener('input',inputChanged)
     iframe.addEventListener('paste',inputChanged)
 
-    // iframe.history.pushState = ( f => function pushState(){
-    //     var ret = f.apply(this, arguments);
-    //     iframe.window.dispatchEvent(new Event('pushstate'));
-    //     iframe.window.dispatchEvent(new Event('locationchange'));
-    //     return ret;
-    // })(iframe.history.pushState);
-    //
-    // iframe.history.replaceState = ( f => function replaceState(){
-    //     var ret = f.apply(this, arguments);
-    //     iframe.window.dispatchEvent(new Event('replacestate'));
-    //     iframe.window.dispatchEvent(new Event('locationchange'));
-    //     return ret;
-    // })(iframe.history.replaceState);
-    //
-    // iframe.window.addEventListener('popstate',()=>{
-    //     iframe.window.dispatchEvent(new Event('locationchange'))
-    // });
-    //
-    // iframe.addEventListener('locationchange', function(){
-    //     console.debug('location changed!');
-    //
-    //     screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
-    //
-    //
-    // })
 
     //send iframe  base
     sendIframeBaseUrl();
@@ -186,13 +161,7 @@ function startMirroring()
         applyChanged: function (removed, addedOrMoved, attributes, text) {
             let args=[removed,addedOrMoved,attributes,text]
             let a=[{'f':'applyChanged'},{'args':args}]
-          /**/  console.debug('dom changed:')
-            console.debug("removed:",removed)
-            console.debug("attributes:",attributes)
-            console.debug("addedOrMoved:",addedOrMoved)
-            console.debug("text:",text)
             screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-            /*          args: [removed, addedOrMoved, attributes, text]*/
         }
     });
 }

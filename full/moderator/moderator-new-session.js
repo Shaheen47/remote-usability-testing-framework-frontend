@@ -268,13 +268,6 @@ async function joinScreensharingSession()
     })
 
 
-    // screenConnection.on("urlParameterChange", (queryString) => {
-    //
-    //     // styler = new PseudoStyler(document.getElementById('mirror'));
-    //     styler = new PseudoStyler(iframe.document);
-    //     styler.loadDocumentStyles();
-    //
-    // })
 
     screenConnection.on("leaveSession", () => {
         screenConnection.connection.stop()
