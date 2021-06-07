@@ -13,6 +13,28 @@ var Videosession;
 //sever
 var urlBase="https://localhost:5001/"
 
+
+function toggleVideoConference()
+{
+    var mirror=document.getElementById("mirror");
+    // mirror.style.height = dh + '%';
+    if(mirror.style.width==70 + '%')
+        mirror.style.width = 95 + '%';
+    else
+        mirror.style.width = 70 + '%';
+    var videoConference=document.getElementById("videoConference");
+    if (videoConference.style.display === "none") {
+        videoConference.style.display = "block";
+    } else {
+        videoConference.style.display = "none";
+    }
+    var button=document.getElementById("toggleVideoConferenceButton");
+    if(button.innerText=='hide video conference')
+        button.innerText='show video conference';
+    else
+        button.innerText='hide video conference';
+}
+
  function joinSession() {
 
 
