@@ -185,7 +185,7 @@ async function joinScreensharingSession()
     screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
 
      styler = new PseudoStyler(iframe.document);
-   // styler = new PseudoStyler(document.getElementById('mirror'));
+    //styler = new PseudoStyler(document.getElementById('mirror'));
 
 
 
@@ -257,7 +257,8 @@ async function joinScreensharingSession()
             x.value = inputContent
         console.info("inputChanged: ",inputContent," , ",elementXpath)
     })
-    scrolling
+
+    // scrolling
 
     screenConnection.on("sentScroll", (vertical) => {
         let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
@@ -267,22 +268,13 @@ async function joinScreensharingSession()
     })
 
 
-//     screenConnection.on("urlParameterChange", (queryString) => {
-//         // Construct URLSearchParams object instance from current URL querystring.
-//         console.debug('queryString:',queryString)
-//
-// /*
-//         document.getElementById("mirrorIFrame").src= "http://localhost:3000/"+queryString
-//         console.debug('src',document.getElementById("mirrorIFrame").src)
-//         console.debug('base',document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").href)
-// */
-//
-//
-//         var newurl = document.getElementById("mirrorIFrame").contentWindow.location.protocol + "//" + document.getElementById("mirrorIFrame").contentWindow.location.host  + queryString;
-//         console.debug('new url',newurl)
-//         document.getElementById("mirrorIFrame").contentWindow.location.replace(newurl)
-//
-//     })
+    // screenConnection.on("urlParameterChange", (queryString) => {
+    //
+    //     // styler = new PseudoStyler(document.getElementById('mirror'));
+    //     styler = new PseudoStyler(iframe.document);
+    //     styler.loadDocumentStyles();
+    //
+    // })
 
     screenConnection.on("leaveSession", () => {
         screenConnection.connection.stop()
@@ -332,7 +324,8 @@ async function handleScreensharingMessage(msg) {
     else if (msg.base) {
     }
     else {
-
+        //styler = new PseudoStyler(iframe.document);
+        await styler.loadDocumentStyles();
         await mirror[msg[0].f].apply(mirror, msg[1].args);
     }
 }

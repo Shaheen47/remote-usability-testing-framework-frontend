@@ -145,40 +145,31 @@ function startMirroring()
     iframe.addEventListener('input',inputChanged)
     iframe.addEventListener('paste',inputChanged)
 
-    iframe.history.pushState = ( f => function pushState(){
-        var ret = f.apply(this, arguments);
-        iframe.window.dispatchEvent(new Event('pushstate'));
-        iframe.window.dispatchEvent(new Event('locationchange'));
-        return ret;
-    })(iframe.history.pushState);
-
-    iframe.history.replaceState = ( f => function replaceState(){
-        var ret = f.apply(this, arguments);
-        iframe.window.dispatchEvent(new Event('replacestate'));
-        iframe.window.dispatchEvent(new Event('locationchange'));
-        return ret;
-    })(iframe.history.replaceState);
-
-    iframe.window.addEventListener('popstate',()=>{
-        iframe.window.dispatchEvent(new Event('locationchange'))
-    });
-
-    iframe.addEventListener('locationchange', function(){
-        console.debug('location changed!');
-/*        reMirror()*/
-        // const queryString = iframe.location.search;
-        // var parmeters=iframe.location.pathname;
-        // if(parmeters=='/')
-        //     parmeters='';
-        // console.debug(queryString);
-        // var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
-        // let a={'base':base+parmeters+queryString}
-        // screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-        // console.debug('base changed:'+base)
-        // // screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
-
-
-    })
+    // iframe.history.pushState = ( f => function pushState(){
+    //     var ret = f.apply(this, arguments);
+    //     iframe.window.dispatchEvent(new Event('pushstate'));
+    //     iframe.window.dispatchEvent(new Event('locationchange'));
+    //     return ret;
+    // })(iframe.history.pushState);
+    //
+    // iframe.history.replaceState = ( f => function replaceState(){
+    //     var ret = f.apply(this, arguments);
+    //     iframe.window.dispatchEvent(new Event('replacestate'));
+    //     iframe.window.dispatchEvent(new Event('locationchange'));
+    //     return ret;
+    // })(iframe.history.replaceState);
+    //
+    // iframe.window.addEventListener('popstate',()=>{
+    //     iframe.window.dispatchEvent(new Event('locationchange'))
+    // });
+    //
+    // iframe.addEventListener('locationchange', function(){
+    //     console.debug('location changed!');
+    //
+    //     screenConnection.invoke("urlParameterChange",screenSharingSessionId,parmeters+queryString);
+    //
+    //
+    // })
 
     //send iframe  base
     sendIframeBaseUrl();
