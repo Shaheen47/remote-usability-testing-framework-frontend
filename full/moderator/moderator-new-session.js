@@ -200,8 +200,37 @@ async function joinScreensharingSession()
     // mouse events
 
     screenConnection.on("sentMousePosition", (x,y) => {
-        document.getElementById("mousePointer").style.left = x + 'px';
-        document.getElementById("mousePointer").style.top = y + 'px';
+        // var xOffset=document.getElementById("outerMirror").getBoundingClientRect().left
+        // var yOffset=document.getElementById("outerMirror").getBoundingClientRect().top
+        // var width=document.getElementById("outerMirror").getBoundingClientRect().width;
+        // var height=document.getElementById("outerMirror").getBoundingClientRect().height;
+        // width=width*x/100
+        // height=height*y/100
+        // width=width+xOffset
+        // height=height+yOffset
+        // document.getElementById("mousePointer").style.left = width+ 'px';
+        // document.getElementById("mousePointer").style.top = height + 'px';
+
+
+
+         // var mirrorX=parseInt(document.getElementById("outerMirror").style.width, 10)
+         // var mirrorY=parseInt(document.getElementById("outerMirror").style.height,10)
+        // var mirrorX=mirrorX*x/100 ;
+        // var mirrorY=mirrorY*y/100;
+        var width=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").getBoundingClientRect().width
+        var height=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").getBoundingClientRect().height
+        console.debug('recived X:',x)
+        console.debug('recived Y:',y)
+        var mirrorX=x*width/100;
+        var mirrorY=y*height/100;
+        console.debug('mirrorX:',mirrorX)
+        console.debug('mirrorY:',mirrorY)
+
+        // document.getElementById("mousePointer").style.left = mirrorX+ 'px';
+        // document.getElementById("mousePointer").style.top = mirrorY + 'px';
+        document.getElementById("mousePointer").style.left = x+ '%';
+        document.getElementById("mousePointer").style.top = y + '%';
+
 
     })
 
@@ -278,7 +307,8 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-     myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
+    myFrameDoc.write('<div id="mirror" style="top: 0;left: 0; width:100%; height:100%;overflow: scroll ; position: relative">' +
+        '</div>');
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     mirror = new TreeMirror(m, {

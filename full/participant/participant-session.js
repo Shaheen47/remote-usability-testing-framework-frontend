@@ -13,6 +13,7 @@ var Videosession;
 //sever
 var urlBase="https://localhost:5001/"
 
+var iframe;
 
 function toggleVideoConference()
 {
@@ -242,18 +243,12 @@ function sendIframeBaseUrl()
 
 function mouseMirror(e)
 {
-    /*var posX = e.clientX;
-    var posY = e.clientY;
-    var posX2 = e.offsetX
-    var posY2 = e.offsetY
-    var posX3 = e.pageX
-    var posY3= e.pageY
-    screenConnection.invoke("sendMousePosition",screenSharingSessionId,posX3,posY3)*/
-    var e = window.event;
     var posX = e.clientX;
+    posX= posX*100/iframe.innerWidth
     var posY = e.clientY;
-/*    console.debug("mouse :",posX," ",posY)*/
-    screenConnection.invoke("sendMousePosition",screenSharingSessionId,e.x,e.y)
+    posY=posY*100/iframe.innerHeight
+
+    screenConnection.invoke("sendMousePosition",screenSharingSessionId,posX,posY)
 
 }
 
