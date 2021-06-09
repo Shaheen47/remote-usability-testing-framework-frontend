@@ -273,7 +273,6 @@ function mouseOver(event)
 {
     var path = getDomPath(event.target);
     screenConnection.invoke("mouseOver",screenSharingSessionId,path)
-/*    console.debug('mouseOver:'+path)*/
 }
 
 function mouseOut(event)
@@ -312,10 +311,6 @@ function urlParametersChange()
     screenConnection.invoke("urlParameterChange",screenSharingSessionId,queryString);
 }
 
-
-function leaveVideoSession() {
-    Videosession.disconnect();
-}
 
 window.onbeforeunload = function () {
     if (Videosession) Videosession.disconnect()

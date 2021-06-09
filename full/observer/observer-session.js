@@ -20,6 +20,9 @@ var urlBase="https://localhost:5001/"
 /*var urlBase="https://localhost:5001/"*/
 
  function joinSession() {
+
+
+
     var xhr = new XMLHttpRequest();
     var url =urlBase+"Session/join-as-observer";
     xhr.open("POST", url, true);
@@ -46,9 +49,15 @@ var urlBase="https://localhost:5001/"
                 console.info(xhr.responseText)
             }
         }
+
+
+
     };
     var data = JSON.stringify({"sessionId":document.getElementById("sessionIdInput").value});
     xhr.send(data);
+
+     //hide all
+     document.getElementById("controlling").style.display = "none"
 }
 
 

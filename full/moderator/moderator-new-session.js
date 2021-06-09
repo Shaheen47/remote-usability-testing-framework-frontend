@@ -23,7 +23,7 @@ var urlBase="https://localhost:5001/"
 
 //
 let styler
-let stylerInitialized=false
+
 
 function createSession()
 {
@@ -154,9 +154,8 @@ async function joinChatSession(chatHubUrl)
 
 function sendChatMessage()
 {
-    var sendername=document.getElementById("senderName").value;
     var chatmessage=document.getElementById("chatMessage").value;
-    chatConnection.invoke("sendMessage",chatSessionId,sendername, chatmessage);
+    chatConnection.invoke("sendMessage",'Moderator', chatmessage);
     document.getElementById("chatMessage").value="";
 }
 
@@ -185,7 +184,6 @@ async function joinScreensharingSession()
     screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
 
      styler = new PseudoStyler(iframe.document);
-    //styler = new PseudoStyler(document.getElementById('mirror'));
 
 
 
@@ -248,13 +246,8 @@ async function joinScreensharingSession()
         console.debug('mouseover begin')
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
-        if (stylerInitialized===false)
-        {
-            styler.loadDocumentStyles();
-            stylerInitialized=true
-        }
         styler.toggleStyle(x, ':hover');
-        console.debug('mouseOver end')
+        // console.debug('mouseOver end')
     })
 
     screenConnection.on("mouseOut",(elementXpath)=> {
@@ -262,7 +255,7 @@ async function joinScreensharingSession()
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
         styler.toggleStyle(x, ':hover');
-        console.debug('mouseOut end')
+        // console.debug('mouseOut end')
 
 
     })
@@ -347,9 +340,9 @@ async function handleScreensharingMessage(msg) {
     else if (msg.base) {
     }
     else {
-        //styler = new PseudoStyler(iframe.document);
-        await styler.loadDocumentStyles();
         await mirror[msg[0].f].apply(mirror, msg[1].args);
+        if(msg[0].f==='initialize' || msg[1].args[1].length>0)
+            await styler.loadDocumentStyles();
     }
 }
 
