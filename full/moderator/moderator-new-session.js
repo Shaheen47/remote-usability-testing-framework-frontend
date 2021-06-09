@@ -197,41 +197,6 @@ async function joinScreensharingSession()
 
     // mouse events
 
-    screenConnection.on("sentMousePosition", (x,y) => {
-        // var xOffset=document.getElementById("outerMirror").getBoundingClientRect().left
-        // var yOffset=document.getElementById("outerMirror").getBoundingClientRect().top
-        // var width=document.getElementById("outerMirror").getBoundingClientRect().width;
-        // var height=document.getElementById("outerMirror").getBoundingClientRect().height;
-        // width=width*x/100
-        // height=height*y/100
-        // width=width+xOffset
-        // height=height+yOffset
-        // document.getElementById("mousePointer").style.left = width+ 'px';
-        // document.getElementById("mousePointer").style.top = height + 'px';
-
-
-
-         // var mirrorX=parseInt(document.getElementById("outerMirror").style.width, 10)
-         // var mirrorY=parseInt(document.getElementById("outerMirror").style.height,10)
-        // var mirrorX=mirrorX*x/100 ;
-        // var mirrorY=mirrorY*y/100;
-        var width=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").getBoundingClientRect().width
-        var height=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror").getBoundingClientRect().height
-        console.debug('recived X:',x)
-        console.debug('recived Y:',y)
-        var mirrorX=x*width/100;
-        var mirrorY=y*height/100;
-        console.debug('mirrorX:',mirrorX)
-        console.debug('mirrorY:',mirrorY)
-
-        // document.getElementById("mousePointer").style.left = mirrorX+ 'px';
-        // document.getElementById("mousePointer").style.top = mirrorY + 'px';
-        document.getElementById("mousePointer").style.left = x+ '%';
-        document.getElementById("mousePointer").style.top = y + '%';
-
-
-    })
-
     screenConnection.on("mouseUp",()=> {
         document.getElementById("mousePointer").src="../mouse-icons/011-mouse-1.svg";
     })
@@ -247,7 +212,9 @@ async function joinScreensharingSession()
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
         styler.toggleStyle(x, ':hover');
-        // console.debug('mouseOver end')
+        document.getElementById("mousePointer").style.left = (x.getBoundingClientRect().left+x.getBoundingClientRect().right)/2 +'px';
+        document.getElementById("mousePointer").style.top = (x.getBoundingClientRect().top+x.getBoundingClientRect().bottom)/2+'px';
+        x.scrollIntoView();
     })
 
     screenConnection.on("mouseOut",(elementXpath)=> {
@@ -255,7 +222,6 @@ async function joinScreensharingSession()
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
         styler.toggleStyle(x, ':hover');
-        // console.debug('mouseOut end')
 
 
     })
@@ -278,15 +244,6 @@ async function joinScreensharingSession()
         else
             x.value = inputContent
         console.info("inputChanged: ",inputContent," , ",elementXpath)
-    })
-
-    // scrolling
-
-    screenConnection.on("sentScroll", (vertical) => {
-        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-        //let el=document.getElementById("mirrorIFrame").contentDocument
-        // To set the scroll
-        el.scrollTop = vertical;
     })
 
 

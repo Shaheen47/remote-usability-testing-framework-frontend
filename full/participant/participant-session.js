@@ -129,11 +129,6 @@ function startMirroring()
 
     iframe= document.getElementById("mirrorIFrame").contentWindow;
 
-    //scroll listeners
-    iframe.addEventListener('scroll',scrollMirror)
-
-    //mouse listener
-    iframe.addEventListener('mousemove',mouseMirror)
 
     iframe.addEventListener('mouseup',mouseUp)
 
@@ -236,28 +231,11 @@ function sendIframeBaseUrl()
 
     //send the base of the iframe page
     var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
-    let a={'base':base+parmeters+queryString}
+    let a={'base':base}
     screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
     console.debug('base changed:'+base)
 }
 
-function mouseMirror(e)
-{
-    var posX = e.clientX;
-    posX= posX*100/iframe.innerWidth
-    var posY = e.clientY;
-    posY=posY*100/iframe.innerHeight
-
-    screenConnection.invoke("sendMousePosition",screenSharingSessionId,posX,posY)
-
-}
-
-function scrollMirror(e)
-{
-    let el=iframe.document.documentElement
-/*    console.debug(el.scrollTop," ",el.scrollLeft)*/
-    screenConnection.invoke("sendScroll",screenSharingSessionId,el.scrollTop)
-}
 
 function mouseUp()
 {
@@ -302,14 +280,6 @@ function inputChanged(event)
 }
 
 // closing
-
-
-function urlParametersChange()
-{
-    console.debug('location changed!');
-    const queryString = iframe.location.search;
-    screenConnection.invoke("urlParameterChange",screenSharingSessionId,queryString);
-}
 
 
 window.onbeforeunload = function () {
