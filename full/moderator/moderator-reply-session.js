@@ -1,7 +1,5 @@
 
 //screensharing
-
-//screensharing
 var screenSharingSessionId
 var screenSharingHubUrl
 var screenSharingReplyControllingHubUrl
@@ -18,7 +16,6 @@ var urlBase="https://localhost:5001/"
 
 
 let styler
-let stylerInitialized=false
 
 
 window.addEventListener("load", f);
@@ -178,26 +175,11 @@ async function joinScreensharingSession()
 
     screenConnection.on("sentDom", (dom) => {
         var msg = JSON.parse(dom);
-        console.debug("here we go2",msg)
-        /*if (msg instanceof Array) {
-            console.debug("here we go3",JSON.parse(subMessage))
-            msg.forEach(function(subMessage) {
-                console.debug("here we go3",JSON.parse(subMessage))
-                handleMessage(JSON.parse(subMessage));
-            });
-        } else {*/
         handleScreensharingMessage(msg);
-        /*        }*/
     });
 
-    // mouse movement
+    // mouse
 
-    screenConnection.on("sentMousePosition", (x,y) => {
-        document.getElementById("mousePointer").style.left = x + 'px';
-        document.getElementById("mousePointer").style.top = y + 'px';
-
-
-    })
 
     screenConnection.on("mouseUp",()=> {
         document.getElementById("mousePointer").src="../mouse-icons/011-mouse-1.svg";
@@ -209,14 +191,6 @@ async function joinScreensharingSession()
 
     // scrolling
 
-
-
-    screenConnection.on("sentScroll", (vertical) => {
-        console.debug(vertical)
-        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-        // To set the scroll
-        el.scrollTop = vertical;
-    })
 
     // inputs
     screenConnection.on("inputChanged",(elementXpath,inputContent)=> {
@@ -239,21 +213,20 @@ async function joinScreensharingSession()
     })
 
     screenConnection.on("mouseOver",(elementXpath)=> {
+        console.debug('mouseover begin')
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
-        if (stylerInitialized===false)
-        {
-            styler.loadDocumentStyles();
-            stylerInitialized=true
-        }
         styler.toggleStyle(x, ':hover');
+        document.getElementById("mousePointer").style.left = (x.getBoundingClientRect().left+x.getBoundingClientRect().right)/2 +'px';
+        document.getElementById("mousePointer").style.top = (x.getBoundingClientRect().top+x.getBoundingClientRect().bottom)/2+'px';
+        x.scrollIntoView();
     })
 
     screenConnection.on("mouseOut",(elementXpath)=> {
+        console.debug('mouseOut begin')
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
         styler.toggleStyle(x, ':hover');
-
     })
 
 
@@ -262,17 +235,27 @@ async function joinScreensharingSession()
 function createNewMirror()
 {
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-    /* myFrameDoc.write('<html>');
-     myFrameDoc.write('<head>');
-     myFrameDoc.write('</head>');
-     myFrameDoc.write('<body>');*/
+
     myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
-    /*    myFrameDoc.write('</body>');
-        myFrameDoc.write('</html>');*/
+
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
-    mirror = new TreeMirror(m);
+    mirror = new TreeMirror(m, {
+        createElement: function(tagName) {
+            if (tagName == 'SCRIPT') {
+                var node = document.createElement('NO-SCRIPT');
+                node.style.display = 'none';
+                return node;
+            }
+
+            if (tagName == 'HEAD') {
+                var node = document.createElement('HEAD');
+                node.appendChild(document.createElement('BASE'));
+                node.firstChild.href = 'http://localhost:3000';
+                return node;
+            }
+        }
+    });
 
 }
 
@@ -288,18 +271,14 @@ async function handleScreensharingMessage(msg) {
         clearScreensharingPage();
         createNewMirror();
 
-    } else if (msg.base) {
-        var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-        var bt = myFrameDoc.createElement("base");
-        bt.href = msg.base
-        /*        bt.setAttribute(msg.base)*/
-        myFrameDoc.getElementsByTagName("head")[0].appendChild(bt);
-    } else {
+    }
 
-        /* mirror['initialize'].apply(mirror, msg[1].args);*/
+    else if (msg.base) {
+    }
+    else {
         await mirror[msg[0].f].apply(mirror, msg[1].args);
-        /*if (msg[0].f === "initialize")
-            await styler.loadDocumentStyles();*/
+        if(msg[0].f==='initialize' || msg[1].args[1].length>0)
+            await styler.loadDocumentStyles();
     }
 }
 

@@ -206,7 +206,6 @@ async function joinScreensharingSession()
     })
 
 
-
     screenConnection.on("mouseOver",(elementXpath)=> {
         console.debug('mouseover begin')
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
@@ -222,8 +221,6 @@ async function joinScreensharingSession()
         var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         var x=node.singleNodeValue
         styler.toggleStyle(x, ':hover');
-
-
     })
 
     // inputs
