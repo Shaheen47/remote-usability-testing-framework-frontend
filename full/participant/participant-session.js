@@ -135,13 +135,13 @@ function startMirroring()
     //send iframe  base
     // sendIframeBaseUrl();
 
-    iframe.addEventListener('mouseup',mouseUp)
+    iframe.addEventListener('pointerup',mouseUp)
 
     iframe.addEventListener('mousedown',mouseDown)
 
-    iframe.addEventListener('mouseover',mouseOver)
+    iframe.addEventListener('pointerover',mouseOver)
 
-    iframe.addEventListener('mouseout',mouseOut)
+    iframe.addEventListener('pointerout',mouseOut)
 
     iframe.addEventListener('input',inputChanged)
     iframe.addEventListener('paste',inputChanged)
@@ -171,9 +171,6 @@ function reMirror()
     //send clear command
     screenConnection.invoke("clearDom",screenSharingSessionId)
 
-
-    iframe.removeEventListener('mousemove',mouseMirror)
-    iframe.removeEventListener('scroll',scrollMirror)
     setTimeout(startMirroring, 500);
 
 }
