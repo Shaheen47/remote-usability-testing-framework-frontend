@@ -24,6 +24,10 @@ var urlBase="https://localhost:5001/"
 //
 let styler
 
+//
+
+var moderatorJoined=false
+
 
 function createSession()
 {
@@ -122,10 +126,16 @@ async function joinChatSession(chatHubUrl)
     // messages listeners
 
     chatConnection.on("userJoined", (message) => {
-        var messageList=document.getElementById("chatList");
-        let li = document.createElement('li');
-        li.textContent = "an Observer has joined";
-        messageList.appendChild(li);
+        if(moderatorJoined===false)
+            moderatorJoined=true;
+        else
+        {
+            var messageList=document.getElementById("chatList");
+            let li = document.createElement('li');
+            li.textContent = "an Observer has joined";
+            messageList.appendChild(li);
+        }
+
     })
 
     chatConnection.on("userLeft", (message) => {
@@ -155,7 +165,7 @@ async function joinChatSession(chatHubUrl)
 function sendChatMessage()
 {
     var chatmessage=document.getElementById("chatMessage").value;
-    chatConnection.invoke("sendMessage",'Moderator', chatmessage);
+    chatConnection.invoke("sendMessage",chatSessionId,'Moderator', chatmessage);
     document.getElementById("chatMessage").value="";
 }
 
@@ -186,14 +196,28 @@ async function joinScreensharingSession()
      styler = new PseudoStyler(iframe.document);
 
 
+    // DOM change events
 
-    createNewMirror();
 
-
-    screenConnection.on("sentDom", (dom) => {
-        var msg = JSON.parse(dom);
-         handleScreensharingMessage(msg);
+    screenConnection.on("domInitialization", (msg,baseUrl) => {
+        createNewMirror(baseUrl);
+        var initialDom = JSON.parse(msg);
+        mirror['initialize'].apply(mirror,initialDom);
+        styler.loadDocumentStyles();
     });
+
+    screenConnection.on("domChanges", (msg) => {
+        var domChanges = JSON.parse(msg);
+        mirror['applyChanged'].apply(mirror,domChanges);
+        if(domChanges[1].length>0)
+            styler.loadDocumentStyles();
+    });
+
+    screenConnection.on("clearDom", () => {
+        clearScreensharingPage();
+        // createNewMirror();
+    });
+
 
     // mouse events
 
@@ -251,7 +275,7 @@ async function joinScreensharingSession()
 
 }
 
-function createNewMirror()
+function createNewMirror(baseUrl)
 {
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
     myFrameDoc.write('<div id="mirror" style="top: 0;left: 0; width:100%; height:100%;overflow: scroll ; position: relative">' +
@@ -269,7 +293,7 @@ function createNewMirror()
             if (tagName == 'HEAD') {
                 var node = document.createElement('HEAD');
                 node.appendChild(document.createElement('BASE'));
-                node.firstChild.href = 'http://localhost:3000';
+                node.firstChild.href = baseUrl;
                 return node;
             }
         }
@@ -281,22 +305,6 @@ function clearScreensharingPage() {
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
     while (m.firstChild) {
         m.removeChild(m.firstChild);
-    }
-}
-
-async function handleScreensharingMessage(msg) {
-    if (msg.clear) {
-        clearScreensharingPage();
-        createNewMirror();
-
-    }
-
-    else if (msg.base) {
-    }
-    else {
-        await mirror[msg[0].f].apply(mirror, msg[1].args);
-        if(msg[0].f==='initialize' || msg[1].args[1].length>0)
-            await styler.loadDocumentStyles();
     }
 }
 

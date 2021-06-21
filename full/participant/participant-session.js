@@ -38,6 +38,9 @@ function toggleVideoConference()
 
  function joinSession() {
 
+    // var websiteUrl=document.getElementById('websiteUrl').value
+    //  var w=
+     document.getElementById('mirrorIFrame').setAttribute("src",window.location.hostname);
 
     var xhr = new XMLHttpRequest();
     var url =urlBase+"Session/join-as-participant";
@@ -129,6 +132,8 @@ function startMirroring()
 
     iframe= document.getElementById("mirrorIFrame").contentWindow;
 
+    //send iframe  base
+    // sendIframeBaseUrl();
 
     iframe.addEventListener('mouseup',mouseUp)
 
@@ -142,22 +147,18 @@ function startMirroring()
     iframe.addEventListener('paste',inputChanged)
 
 
-    //send iframe  base
-    sendIframeBaseUrl();
-
     // mirror
 
     mirrorClient = new TreeMirrorClient( iframe.document.documentElement, {
         initialize: function ( rootId, children) {
+            var baseUrl=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
             let args=[rootId,children]
-            let a=[{'f':'initialize'},{'args':args}]
-            screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
+            screenConnection.invoke("sendDomInitialization",screenSharingSessionId,JSON.stringify(args),baseUrl)
         },
 
         applyChanged: function (removed, addedOrMoved, attributes, text) {
             let args=[removed,addedOrMoved,attributes,text]
-            let a=[{'f':'applyChanged'},{'args':args}]
-            screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
+            screenConnection.invoke("sendDomChanges",screenSharingSessionId,JSON.stringify(args))
         }
     });
 }
@@ -168,8 +169,7 @@ function reMirror()
 
 
     //send clear command
-    let c={'clear':'clear'}
-    screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(c))
+    screenConnection.invoke("clearDom",screenSharingSessionId)
 
 
     iframe.removeEventListener('mousemove',mouseMirror)
@@ -220,21 +220,13 @@ function iframeURLChange(iframe, callback) {
 
 // screensharing callbacks
 
-function sendIframeBaseUrl()
-{
-    const queryString = iframe.location.search;
-    var parmeters=iframe.location.pathname;
-    if(parmeters=='/')
-        parmeters='';
-    console.debug(queryString);
-
-
-    //send the base of the iframe page
-    var base=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
-    let a={'base':base}
-    screenConnection.invoke("sendDom",screenSharingSessionId,JSON.stringify(a))
-    console.debug('base changed:'+base)
-}
+// function sendIframeBaseUrl()
+// {
+//
+//     //send the base of the iframe page
+//     var baseUrl=iframe.location.href.match(/^(.*\/)[^\/]*$/)[1];
+//     screenConnection.invoke("sendBaseUrlChanged",screenSharingSessionId,baseUrl)
+// }
 
 
 function mouseUp()

@@ -51,14 +51,27 @@
 </div>
 
 
-<div   style="top: 0%;left: 5%   ;width: 55%; height: 10%; position: absolute;border: solid ;display: inline-block">
-    <button onclick="createSession()" style="top: 0;left: 0px ;position: relative">Create Session</button>
-    <button onclick="joinSession()" style="top: 0;left: 20px  ;position: relative">Join Session</button>
-    <button onclick="stopSession()" style="top: 0;left: 20px  ;position: relative">stop Session</button>
-    <label for="sessionIdInput" style="top: 0;left: 40px  ;position: relative" >Session Id:</label>
-    <input type="text" id="sessionIdInput" style="top: 0;left: 70px;position: relative"></input>
-    <label for="recordCheckBox" style="top: 45px;left:-600px;position: relative"> Record Session ?</label><br>
-    <input type="checkbox" id="recordCheckBox" name="recordCheckBox" value="Bike" style="top: 20px;left: 220px;position: relative">
+<div   style="top: 0%;left: 5%   ;width: 100%; height: 10%; position: absolute;border: solid ;display: inline-block">
+    <button onclick="createSession()" style="top: 0;left: 0px ;position: inherit">Create Session</button>
+
+
+
+    <label for="recordCheckBox" style="top: 0%;left:7%;position: inherit"> Record Session ?</label><br>
+    <input type="checkbox" id="recordCheckBox" name="recordCheckBox" value="Bike" style="top: 0%;left: 15%;position: inherit">
+
+    <label for="sessionName" style="top: 50%;left: 7%  ;position: inherit" >session Name:</label>
+    <input type="text" id="sessionName" style="top: 50%;left: 15% ;position: inherit"></input>
+
+    <label for="sessionIdInput" style="top: 0;left: 25%  ;position: inherit" >Created Session Id:</label>
+    <input type="text" id="sessionIdInput" style="top: 0;left: 35%;position: inherit" readonly="readonly"></input>
+
+
+    <button onclick="joinSession()" style="top: 0;left: 50%  ;position: inherit">Join Session</button>
+    <button onclick="stopSession()" style="top: 50%;left: 50%  ;position: inherit">stop Session</button>
+
+
+
+
 </div>
 
 

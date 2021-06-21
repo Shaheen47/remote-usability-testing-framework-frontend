@@ -86,8 +86,8 @@ function joinConferenceSession()
 }
 
 
-
 // screensharing
+
 
 async function joinScreensharingSession()
 {
@@ -104,52 +104,86 @@ async function joinScreensharingSession()
         setTimeout(5000);
     }
 
+    var iframe=document.getElementById("mirrorIFrame").contentWindow
+
+
     screenConnection.invoke("joinSessionAsSubscriber",screenSharingSessionId)
 
+    styler = new PseudoStyler(iframe.document);
 
-    createNewMirror();
+
+    // DOM change events
 
 
-    screenConnection.on("sentDom", (dom) => {
-        var msg = JSON.parse(dom);
-        console.debug("here we go2",msg)
-        /*if (msg instanceof Array) {
-            console.debug("here we go3",JSON.parse(subMessage))
-            msg.forEach(function(subMessage) {
-                console.debug("here we go3",JSON.parse(subMessage))
-                handleMessage(JSON.parse(subMessage));
-            });
-        } else {*/
-        handleScreensharingMessage(msg);
-        /*        }*/
+    screenConnection.on("domInitialization", (msg,baseUrl) => {
+        createNewMirror(baseUrl);
+        var initialDom = JSON.parse(msg);
+        mirror['initialize'].apply(mirror,initialDom);
+        styler.loadDocumentStyles();
     });
 
-    // mouse movement
+    screenConnection.on("domChanges", (msg) => {
+        var domChanges = JSON.parse(msg);
+        mirror['applyChanged'].apply(mirror,domChanges);
+        if(domChanges[1].length>0)
+            styler.loadDocumentStyles();
+    });
 
-    screenConnection.on("sentMousePosition", (x,y) => {
-        document.getElementById("mousePointer").style.left = x + 'px';
-        document.getElementById("mousePointer").style.top = y + 'px';
+    screenConnection.on("clearDom", () => {
+        clearScreensharingPage();
+        // createNewMirror();
+    });
 
-    })
+
+    // mouse events
 
     screenConnection.on("mouseUp",()=> {
-        document.getElementById("mousePointer").src="../mouse-icons/011-mouse-1.svg";
+        document.getElementById("mousePointer").src="mouse-icons/011-mouse-1.svg";
     })
 
     screenConnection.on("mouseDown",()=> {
-        document.getElementById("mousePointer").src="../mouse-icons/048-click.svg";
+        document.getElementById("mousePointer").src="mouse-icons/048-click.svg";
     })
 
-    // scrolling
 
-
-
-    screenConnection.on("sentScroll", (vertical) => {
-        console.debug(vertical)
-        let el=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-        // To set the scroll
-        el.scrollTop = vertical;
+    screenConnection.on("mouseOver",(elementXpath)=> {
+        console.debug('mouseover begin')
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        styler.toggleStyle(x, ':hover');
+        document.getElementById("mousePointer").style.left = (x.getBoundingClientRect().left+x.getBoundingClientRect().right)/2 +'px';
+        document.getElementById("mousePointer").style.top = (x.getBoundingClientRect().top+x.getBoundingClientRect().bottom)/2+'px';
+        x.scrollIntoView();
     })
+
+    screenConnection.on("mouseOut",(elementXpath)=> {
+        console.debug('mouseOut begin')
+        var node=iframe.document.evaluate('/html/body/div'+elementXpath,iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x=node.singleNodeValue
+        styler.toggleStyle(x, ':hover');
+    })
+
+    // inputs
+    screenConnection.on("inputChanged",(elementXpath,inputContent)=> {
+        var node = iframe.document.evaluate('/html/body/div' + elementXpath, iframe.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var x = node.singleNodeValue
+        if(x.type==='checkbox')
+        {
+            if(inputContent==="true")
+                x.checked=true
+            else
+                x.checked=false
+        }
+        else if(x.type==='radio')
+            x.checked = inputContent
+        else if(x.type==='select-one')
+            x.selectedIndex = inputContent
+        else
+            x.value = inputContent
+        console.info("inputChanged: ",inputContent," , ",elementXpath)
+    })
+
+
 
     screenConnection.on("leaveSession", () => {
         screenConnection.connection.stop()
@@ -157,22 +191,15 @@ async function joinScreensharingSession()
 
 }
 
-function createNewMirror()
+function createNewMirror(baseUrl)
 {
-    var base;
     var myFrameDoc = document.getElementById('mirrorIFrame').contentDocument;
-    myFrameDoc.write('<html>');
-    myFrameDoc.write('<head>');
-    myFrameDoc.write('</head>');
-    myFrameDoc.write('<body>');
-    myFrameDoc.write('<div id="mirror" style="top: 0px;left: 0px; width:100%; height:100%;overflow: scroll ; position: relative"></div>');
-    myFrameDoc.write('</body>');
-    myFrameDoc.write('</html>');
+    myFrameDoc.write('<div id="mirror" style="top: 0;left: 0; width:100%; height:100%;overflow: scroll ; position: relative">' +
+        '</div>');
 
     let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
-    /* mirror = new TreeMirror(document.getElementById("mirror"), {*/
     mirror = new TreeMirror(m, {
-        createElement: function (tagName) {
+        createElement: function(tagName) {
             if (tagName == 'SCRIPT') {
                 var node = document.createElement('NO-SCRIPT');
                 node.style.display = 'none';
@@ -182,7 +209,7 @@ function createNewMirror()
             if (tagName == 'HEAD') {
                 var node = document.createElement('HEAD');
                 node.appendChild(document.createElement('BASE'));
-                node.firstChild.href = base;
+                node.firstChild.href = baseUrl;
                 return node;
             }
         }
@@ -197,18 +224,13 @@ function clearScreensharingPage() {
     }
 }
 
-function handleScreensharingMessage(msg) {
-    if (msg.clear) {
-        clearScreensharingPage();
-        createNewMirror();
+function clearScreensharingPage() {
+    let m=document.getElementById("mirrorIFrame").contentWindow.document.getElementById("mirror")
+    while (m.firstChild) {
+        m.removeChild(m.firstChild);
     }
-    else if (msg.base)
-        base = msg.base;
-    else
-        /* mirror['initialize'].apply(mirror, msg[1].args);*/
-        mirror[msg[0].f].apply(mirror, msg[1].args);
-    console.debug("mirror[msg[0].f].apply(mirror, msg[1].args) called")
 }
+
 
 //////////////
 

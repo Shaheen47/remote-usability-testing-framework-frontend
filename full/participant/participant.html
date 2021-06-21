@@ -15,15 +15,16 @@
 </head>
 <body>
 
-<div  style="top: 0%;left: 2%   ;width: 55%; height: 5%; position: absolute;border: solid ;display: inline-block">
+<div  style="top: 0%;left: 2%   ;width: 40%; height: 5%; position: absolute;border: solid ;display: inline-block" >
     <button onclick="joinSession()" style="top: 0%;left: 2%  ;position: relative">Join Session</button>
     <label for="sessionIdInput" style="top: 0%;left: 5%  ;position: relative" >Session Id:</label>
     <input type="text" id="sessionIdInput" style="top: 0%;left: 8% ;position: relative">
-    <button id="toggleVideoConferenceButton" onclick="toggleVideoConference()" style="top: 0%;left: 10%  ;position: relative">hide video conference</button>
+    <button id="toggleVideoConferenceButton" onclick="toggleVideoConference()" style="top: 0%;left: 15%  ;position: relative">hide video conference</button>
 </div>
 
+
 <div id="mirror" class="w3-container" style="top: 6%;left: 2%  ;width: 70%; height: 90%; position: absolute ;border: solid" >
-    <iframe name="mirrorIFrame" id="mirrorIFrame" src="../website/index.html" style="top: 0px;left: 0px; width:100%; height:100%;overflow: auto ; position: relative" >
+    <iframe name="mirrorIFrame" id="mirrorIFrame" style="top: 0px;left: 0px; width:100%; height:100%;overflow: auto ; position: relative" >
     </iframe>
 </div>
 

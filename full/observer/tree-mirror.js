@@ -83,7 +83,20 @@ var TreeMirror = (function () {
                 if (this.delegate && this.delegate.createElement)
                     node = this.delegate.createElement(nodeData.tagName);
                 if (!node)
-                    node = doc.createElement(nodeData.tagName);
+                {
+                    if(nodeData.tagName==='path' || nodeData.tagName==='svg' ||
+                        nodeData.tagName==='g' || nodeData.tagName==='marker' ||
+                        nodeData.tagName==='mask' || nodeData.tagName==='pattern' ||
+                        nodeData.tagName==='switch' || nodeData.tagName==='symbol' ||
+                        nodeData.tagName==='defs' || nodeData.tagName==='foreignObject' ||
+                        nodeData.tagName==='circle' || nodeData.tagName==='ellipse' ||
+                        nodeData.tagName==='line' || nodeData.tagName==='polygon' ||
+                        nodeData.tagName==='polyline' || nodeData.tagName==='rect' )
+                        node = doc.createElementNS('http://www.w3.org/2000/svg', nodeData.tagName);
+                    else
+                        node = doc.createElement(nodeData.tagName);
+                }
+
                 Object.keys(nodeData.attributes).forEach(function (name) {
                     if (!_this.delegate ||
                         !_this.delegate.setAttribute ||
